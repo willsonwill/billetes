@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <title>Serie-BOL IA</title>
+    <title>Serie-BOL OCR</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap");
       * {
@@ -23,81 +23,22 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 14px 14px 30px;
+        padding: 14px 14px 40px;
         gap: 12px;
       }
-
       h1 {
         font-family: "Orbitron", sans-serif;
         font-size: 15px;
         letter-spacing: 3px;
         color: #7aaed0;
-        margin-top: 2px;
+        margin-top: 4px;
       }
-
-      /* API KEY INPUT */
-      .apibox {
-        width: 100%;
-        max-width: 440px;
-        background: #0a1828;
-        border: 1px solid #1a3050;
-        border-radius: 12px;
-        padding: 12px 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .apibox label {
+      .sub {
         font-size: 10px;
         letter-spacing: 2px;
-        color: #2e6080;
+        color: #1e3a58;
         text-transform: uppercase;
-      }
-      .apibox-row {
-        display: flex;
-        gap: 8px;
-      }
-      .apibox input {
-        flex: 1;
-        background: #060d1a;
-        border: 1px solid #1a3050;
-        border-radius: 8px;
-        padding: 9px 12px;
-        color: #fff;
-        font-family: "Share Tech Mono", monospace;
-        font-size: 13px;
-        letter-spacing: 1px;
-        outline: none;
-      }
-      .apibox input:focus {
-        border-color: #0066cc;
-      }
-      .apibox input::placeholder {
-        color: #1a3050;
-      }
-      .btn-save {
-        font-family: "Rajdhani", sans-serif;
-        font-weight: 700;
-        font-size: 12px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        padding: 9px 16px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        white-space: nowrap;
-        background: linear-gradient(135deg, #004bbd, #0068f0);
-        color: #fff;
-      }
-      .api-status {
-        font-size: 11px;
-        letter-spacing: 1px;
-      }
-      .api-ok {
-        color: #00e676;
-      }
-      .api-no {
-        color: #ff4060;
+        margin-top: -6px;
       }
 
       /* CAMERA */
@@ -121,7 +62,7 @@
         display: none;
       }
 
-      /* green ROI box */
+      /* ROI green box */
       .roi {
         position: absolute;
         left: 5%;
@@ -173,7 +114,6 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        color: #1e3a58;
       }
       .ph .ico {
         font-size: 42px;
@@ -192,7 +132,7 @@
         color: #2e5070;
         text-transform: uppercase;
         text-align: center;
-        min-height: 16px;
+        min-height: 18px;
       }
       .status.loading {
         color: #ffd600;
@@ -218,17 +158,17 @@
       .btn-cam {
         width: 100%;
         max-width: 440px;
-        padding: 14px;
+        padding: 15px;
         border-radius: 12px;
         border: none;
         cursor: pointer;
         background: linear-gradient(135deg, #005530, #00a86b);
         color: #fff;
         font-family: "Rajdhani", sans-serif;
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 700;
         letter-spacing: 2px;
-        box-shadow: 0 4px 18px rgba(0, 168, 107, 0.35);
+        box-shadow: 0 4px 18px rgba(0, 168, 107, 0.4);
         transition: all 0.15s;
       }
       .btn-cam:active {
@@ -238,14 +178,14 @@
       .btn-cap {
         width: 100%;
         max-width: 440px;
-        padding: 18px;
+        padding: 20px;
         border-radius: 14px;
         border: none;
         cursor: pointer;
         background: linear-gradient(135deg, #003eaa, #0062f0);
         color: #fff;
         font-family: "Orbitron", sans-serif;
-        font-size: 17px;
+        font-size: 18px;
         font-weight: 900;
         letter-spacing: 3px;
         box-shadow: 0 6px 28px rgba(0, 60, 180, 0.5);
@@ -254,7 +194,6 @@
       }
       .btn-cap:active {
         transform: scale(0.97);
-        box-shadow: 0 3px 14px rgba(0, 60, 180, 0.4);
       }
       .btn-cap:disabled {
         background: #0d1828;
@@ -270,7 +209,7 @@
         background: #0a1828;
         border: 2px solid #152540;
         border-radius: 16px;
-        padding: 18px 16px 16px;
+        padding: 18px 16px;
         text-align: center;
         transition: all 0.4s;
       }
@@ -280,7 +219,7 @@
       }
       .result.error {
         border-color: #ff4060;
-        box-shadow: 0 0 24px rgba(255, 64, 96, 0.1);
+        box-shadow: 0 0 24px rgba(255, 64, 96, 0.12);
       }
 
       .result-lbl {
@@ -293,10 +232,10 @@
 
       .number {
         font-family: "Share Tech Mono", monospace;
-        font-size: 34px;
+        font-size: 36px;
         letter-spacing: 5px;
         color: #1a3050;
-        min-height: 52px;
+        min-height: 54px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -311,8 +250,9 @@
       }
       .number.err {
         color: #ff4060;
-        font-size: 18px;
-        letter-spacing: 2px;
+        font-size: 16px;
+        letter-spacing: 1px;
+        font-family: "Rajdhani", sans-serif;
       }
       @keyframes pop {
         0% {
@@ -328,13 +268,13 @@
 
       /* SPINNER */
       .spinner {
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
         border: 3px solid #1a3050;
         border-top-color: #0062f0;
         border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-        margin: 8px auto;
+        animation: spin 0.6s linear infinite;
+        margin: 0 auto;
       }
       @keyframes spin {
         to {
@@ -357,14 +297,14 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
-        max-height: 200px;
+        max-height: 220px;
         overflow-y: auto;
       }
       .hist-item {
         background: #0a1828;
         border: 1px solid #152540;
         border-radius: 10px;
-        padding: 10px 14px;
+        padding: 11px 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -381,7 +321,7 @@
       }
       .hist-n {
         font-family: "Share Tech Mono", monospace;
-        font-size: 16px;
+        font-size: 17px;
         letter-spacing: 3px;
         color: #90c0e8;
       }
@@ -395,34 +335,19 @@
         color: #1a3050;
         letter-spacing: 1px;
         text-align: center;
-        padding: 10px;
+        padding: 12px;
       }
     </style>
   </head>
   <body>
-    <h1>🇧🇴 SERIE-BOL IA</h1>
-
-    <!-- API KEY -->
-    <div class="apibox" id="apibox">
-      <label>🔑 Gemini API Key (gratuita)</label>
-      <div class="apibox-row">
-        <input
-          type="password"
-          id="apiInput"
-          placeholder="Pega tu API key aquí..."
-        />
-        <button class="btn-save" onclick="saveKey()">Guardar</button>
-      </div>
-      <span class="api-status" id="apiStatus"
-        >Obtén tu key gratis en <b>aistudio.google.com</b></span
-      >
-    </div>
+    <h1>🇧🇴 SERIE-BOL OCR</h1>
+    <div class="sub">OCR.Space API · Gratis · Sin registro</div>
 
     <!-- CAMERA -->
     <div class="cam-wrap" id="camWrap">
       <div class="ph" id="ph">
         <div class="ico">📷</div>
-        <p>Primero guarda tu API key<br />luego inicia la cámara</p>
+        <p>Toca "Abrir Cámara"<br />y apunta al número de serie</p>
       </div>
       <video id="vid" autoplay playsinline muted style="display: none"></video>
       <canvas id="cap"></canvas>
@@ -432,14 +357,9 @@
       </div>
     </div>
 
-    <div class="status" id="status">Ingresa tu API key para comenzar</div>
+    <div class="status" id="status">Listo para iniciar</div>
 
-    <button
-      class="btn-cam"
-      id="btnCam"
-      onclick="startCam()"
-      style="display: none"
-    >
+    <button class="btn-cam" id="btnCam" onclick="startCam()">
       📷 Abrir Cámara
     </button>
     <button class="btn-cap" id="btnCap" onclick="capturar()">
@@ -459,41 +379,11 @@
     </div>
 
     <script>
-      let apiKey = "AIzaSyBxRU4QNXNtmC3O7Xi3L0Itw1TGKoIGFTE",
-        stream = null;
+      let stream = null;
 
-      /* ── API KEY ── */
-      function saveKey() {
-        const k = g("apiInput").value.trim();
-        if (!k) {
-          setApiStatus("Ingresa una key válida", false);
-          return;
-        }
-        apiKey = k;
-        localStorage.setItem("gemini_key", k);
-        setApiStatus("✅ API Key guardada", true);
-        g("btnCam").style.display = "block";
-        g("apiInput").value = "••••••••••••••••";
-        setStatus("ready", 'Toca "Abrir Cámara"');
-      }
-
-      function setApiStatus(msg, ok) {
-        const s = g("apiStatus");
-        s.textContent = msg;
-        s.className = "api-status " + (ok ? "api-ok" : "api-no");
-      }
-
-      // Load saved key
-      window.onload = () => {
-        const saved = localStorage.getItem("gemini_key");
-        if (saved) {
-          apiKey = saved;
-          g("apiInput").value = "••••••••••••••••";
-          setApiStatus("✅ API Key guardada", true);
-          g("btnCam").style.display = "block";
-          setStatus("ready", 'Toca "Abrir Cámara"');
-        }
-      };
+      // OCR.Space free key — funciona sin registro
+      // Límite: 500 requests/día gratis
+      const OCR_KEY = "helloworld";
 
       /* ── CAMERA ── */
       async function startCam() {
@@ -505,13 +395,14 @@
               height: { ideal: 1080 },
             },
           });
-          g("vid").srcObject = stream;
-          g("vid").style.display = "block";
+          const v = g("vid");
+          v.srcObject = stream;
+          v.style.display = "block";
           g("ph").style.display = "none";
           g("roi").style.display = "block";
           g("btnCam").style.display = "none";
           g("btnCap").style.display = "block";
-          setStatus("ready", "Centra el número de serie y toca el botón");
+          setStatus("ready", "Centra el número y toca el botón");
         } catch (e) {
           setStatus("err", "Error cámara: " + e.message);
         }
@@ -519,10 +410,6 @@
 
       /* ── CAPTURAR ── */
       async function capturar() {
-        if (!apiKey) {
-          setStatus("err", "Falta la API Key");
-          return;
-        }
         const vid = g("vid");
         if (!vid.videoWidth) {
           setStatus("err", "Cámara no lista");
@@ -530,105 +417,118 @@
         }
 
         g("btnCap").disabled = true;
-        setStatus("loading", "Enviando a Gemini...");
-
-        // Show spinner in result
+        setStatus("loading", "Leyendo número...");
         g("result").className = "result";
         g("numOut").innerHTML = '<div class="spinner"></div>';
 
         try {
-          // Capture frame
           const W = vid.videoWidth,
             H = vid.videoHeight;
-          const c = document.createElement("canvas");
-          // Crop the ROI zone only (green box area)
+
+          // Crop the green ROI zone
           const sx = Math.round(W * 0.05),
             sy = Math.round(H * 0.28);
           const sw = Math.round(W * 0.9),
             sh = Math.round(H * 0.44);
+
+          const c = document.createElement("canvas");
           c.width = sw;
           c.height = sh;
           c.getContext("2d").drawImage(vid, sx, sy, sw, sh, 0, 0, sw, sh);
 
-          // Convert to base64 JPEG (compressed for speed)
-          const base64 = c.toDataURL("image/jpeg", 0.92).split(",")[1];
+          // Convert to base64
+          const base64 = c.toDataURL("image/jpeg", 0.95).split(",")[1];
 
-          // Call Gemini
-          const serial = await askGemini(base64);
+          // Send to OCR.Space
+          const serial = await ocrSpace(base64);
 
-          if (serial && serial !== "NO") {
+          if (serial) {
             const out = g("numOut");
             out.textContent = serial;
             out.className = "number show";
             setTimeout(() => out.classList.remove("show"), 500);
             g("result").className = "result found";
             addHistory(serial);
-            setStatus("ready", "✅ Serie leída — toca de nuevo para otra");
+            setStatus("ready", "✅ Listo — toca de nuevo para otro billete");
           } else {
             g("numOut").className = "number err";
-            g("numOut").textContent = "No detectado";
+            g("numOut").textContent = "No detectado — intenta de nuevo";
             g("result").className = "result error";
-            setStatus("err", "No se encontró — reintenta");
+            setStatus("err", "Acerca más el billete y reintenta");
           }
         } catch (e) {
           g("numOut").className = "number err";
-          g("numOut").textContent = "Error";
+          g("numOut").textContent = "Error de conexión";
           g("result").className = "result error";
-          setStatus("err", "Error: " + e.message);
+          setStatus("err", e.message);
           console.error(e);
         }
 
         g("btnCap").disabled = false;
       }
 
-      /* ── GEMINI API ── */
-      async function askGemini(base64img) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      /* ── OCR.SPACE API ── */
+      async function ocrSpace(base64) {
+        const formData = new FormData();
+        formData.append("base64Image", "data:image/jpeg;base64," + base64);
+        formData.append("apikey", OCR_KEY);
+        formData.append("language", "eng");
+        formData.append("isOverlayRequired", "false");
+        formData.append("detectOrientation", "true");
+        formData.append("scale", "true"); // auto-scale for better accuracy
+        formData.append("OCREngine", "2"); // Engine 2 = more accurate
 
-        const body = {
-          contents: [
-            {
-              parts: [
-                {
-                  text: `Mira esta imagen de un billete boliviano. 
-Encuentra el número de serie. 
-El número de serie es una secuencia de 8-11 dígitos seguida de una letra (ejemplo: 2266791860A o A2266791860).
-Responde ÚNICAMENTE con el número de serie, sin espacios, sin puntos, sin explicaciones.
-Si no encuentras ningún número de serie, responde solo: NO`,
-                },
-                {
-                  inline_data: {
-                    mime_type: "image/jpeg",
-                    data: base64img,
-                  },
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: 0,
-            maxOutputTokens: 30,
-          },
-        };
-
-        const res = await fetch(url, {
+        const res = await fetch("https://api.ocr.space/parse/image", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+          body: formData,
         });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error?.message || "Error API " + res.status);
-        }
+        if (!res.ok) throw new Error("OCR API error " + res.status);
 
         const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        // Clean up just in case
-        return text
-          .trim()
-          .replace(/[^A-Z0-9]/gi, "")
-          .toUpperCase();
+
+        if (data.IsErroredOnProcessing) {
+          throw new Error(data.ErrorMessage?.[0] || "OCR error");
+        }
+
+        const raw = data.ParsedResults?.[0]?.ParsedText || "";
+        console.log("OCR raw:", raw);
+
+        return extractSerial(raw);
+      }
+
+      /* ── EXTRACT SERIAL ── */
+      function extractSerial(raw) {
+        if (!raw) return "";
+        // Clean: keep only letters, digits, spaces
+        const s = raw
+          .toUpperCase()
+          .replace(/[^A-Z0-9\s]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        // Bolivian bill formats:
+        // 2266791860 A  →  digits (8-11) + optional space + letter
+        // A 2266791860  →  letter + optional space + digits
+        const tests = [
+          /(\d{8,11})\s*([A-Z])\b/, // 2266791860A  ← formato principal
+          /\b([A-Z])\s*(\d{8,11})/, // A2266791860
+          /\b[A-Z]{1,2}\d{6,10}\b/, // AB123456
+          /\b\d{7,11}\b/, // solo dígitos
+        ];
+
+        for (const re of tests) {
+          const m = s.match(re);
+          if (!m) continue;
+          if (m[2] !== undefined) {
+            const a = m[1],
+              b = m[2];
+            if (/^[A-Z]$/.test(b)) return a + b; // 2266791860A
+            if (/^[A-Z]$/.test(a)) return a + b; // A2266791860
+          }
+          return m[0].replace(/\s/g, "");
+        }
+        return "";
       }
 
       /* ── HISTORY ── */
@@ -641,12 +541,12 @@ Si no encuentras ningún número de serie, responde solo: NO`,
         list.prepend(d);
       }
 
-      /* ── HELPERS ── */
       function setStatus(cls, txt) {
         const s = g("status");
         s.className = "status" + (cls ? " " + cls : "");
         s.textContent = txt;
       }
+
       function g(id) {
         return document.getElementById(id);
       }
