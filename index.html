@@ -540,24 +540,6 @@
     <h1>🇧🇴 SERIE-BOL</h1>
     <div class="sub">BCB CP9/2026 · Verificador oficial</div>
 
-    <!-- API KEY -->
-    <div class="apibox">
-      <label>🔑 Tu API Key de OCR.Space (gratis)</label>
-      <div class="apirow">
-        <input
-          type="password"
-          id="apiInput"
-          placeholder="K84011547688957"
-          autocomplete="off"
-        />
-        <button class="btn-save" onclick="saveKey()">Guardar</button>
-      </div>
-      <span class="api-hint" id="apiHint">
-        Obtén tu key GRATIS en: <b>ocr.space/ocrapi/freekey</b> — solo necesitas
-        tu email
-      </span>
-    </div>
-
     <!-- DENOM TABS -->
     <div class="tabs">
       <div class="tab" id="tab10" onclick="selDenom(10)">Bs. 10</div>
@@ -654,40 +636,15 @@
         ],
       };
 
-      let apiKey = "",
+      let apiKey = "K84011547688957",
         stream = null,
         denom = 0;
 
       /* ── INIT ── */
       window.onload = () => {
-        const k = localStorage.getItem("ocrspace_key");
-        if (k) {
-          apiKey = k;
-          g("apiInput").value = "••••••••••••••••";
-          g("apiHint").textContent = "✅ API Key guardada — lista para usar";
-          g("apiHint").className = "api-hint api-ok";
-          g("btnCam").style.display = "block";
-          setStatus("ready", "Selecciona Bs. 10, 20 o 50");
-        }
-      };
-
-      /* ── SAVE KEY ── */
-      function saveKey() {
-        const k = g("apiInput").value.trim();
-        if (!k || k.includes("•")) {
-          if (apiKey) return; // already saved
-          g("apiHint").textContent = "⚠️ Pega tu API key primero";
-          g("apiHint").className = "api-hint api-no";
-          return;
-        }
-        apiKey = k;
-        localStorage.setItem("ocrspace_key", k);
-        g("apiInput").value = "••••••••••••••••";
-        g("apiHint").textContent = "✅ API Key guardada correctamente";
-        g("apiHint").className = "api-hint api-ok";
         g("btnCam").style.display = "block";
         setStatus("ready", "Selecciona Bs. 10, 20 o 50");
-      }
+      };
 
       /* ── DENOM ── */
       function selDenom(d) {
