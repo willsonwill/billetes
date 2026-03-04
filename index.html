@@ -1,0 +1,1512 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detector Billetes Bolivia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap");
+
+      :root {
+        --verde: #00e676;
+        --rojo: #ff1744;
+        --amarillo: #ffd600;
+        --azul-dark: #0a0f1e;
+        --panel: #0d1628;
+        --borde: #1e3a5f;
+        --texto: #b0c4de;
+        --blanco: #e8f0fe;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--azul-dark);
+        color: var(--blanco);
+        font-family: "Rajdhani", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background-image:
+          radial-gradient(
+            ellipse at 20% 50%,
+            rgba(0, 100, 255, 0.05) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 80% 20%,
+            rgba(0, 200, 100, 0.04) 0%,
+            transparent 50%
+          ),
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 40px,
+            rgba(30, 58, 95, 0.15) 40px,
+            rgba(30, 58, 95, 0.15) 41px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 40px,
+            rgba(30, 58, 95, 0.15) 40px,
+            rgba(30, 58, 95, 0.15) 41px
+          );
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 28px;
+        border-bottom: 1px solid var(--borde);
+        background: rgba(13, 22, 40, 0.95);
+        backdrop-filter: blur(10px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #0052cc, #00a86b);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 0 20px rgba(0, 168, 107, 0.3);
+      }
+
+      .logo h1 {
+        font-family: "Orbitron", sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: var(--blanco);
+      }
+
+      .logo span {
+        display: block;
+        font-family: "Rajdhani", sans-serif;
+        font-size: 11px;
+        color: var(--texto);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        font-weight: 400;
+      }
+
+      .status-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--borde);
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 13px;
+        color: var(--texto);
+        letter-spacing: 1px;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #444;
+        transition: background 0.3s;
+      }
+      .dot.active {
+        background: var(--verde);
+        box-shadow: 0 0 8px var(--verde);
+        animation: pulse-dot 1.5s infinite;
+      }
+      .dot.scanning {
+        background: var(--amarillo);
+        box-shadow: 0 0 8px var(--amarillo);
+        animation: pulse-dot 0.8s infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+
+      .main {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 20px;
+        padding: 20px 28px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      @media (max-width: 900px) {
+        .main {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* CAMERA PANEL */
+      .cam-panel {
+        background: var(--panel);
+        border: 1px solid var(--borde);
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .cam-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--borde);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .cam-title {
+        font-size: 13px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--texto);
+        font-weight: 600;
+      }
+
+      .cam-controls {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn {
+        font-family: "Rajdhani", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 8px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #0052cc, #0070f3);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 82, 204, 0.4);
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0, 82, 204, 0.5);
+      }
+
+      .btn-danger {
+        background: rgba(255, 23, 68, 0.15);
+        color: var(--rojo);
+        border: 1px solid rgba(255, 23, 68, 0.3);
+      }
+      .btn-danger:hover {
+        background: rgba(255, 23, 68, 0.25);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--texto);
+        border: 1px solid var(--borde);
+      }
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .video-container {
+        position: relative;
+        background: #000;
+        min-height: 360px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      video {
+        width: 100%;
+        max-height: 420px;
+        object-fit: cover;
+        display: block;
+      }
+
+      canvas#overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      canvas#capture {
+        display: none;
+      }
+
+      .cam-placeholder {
+        text-align: center;
+        padding: 60px 40px;
+        color: var(--texto);
+      }
+
+      .cam-placeholder .icon {
+        font-size: 56px;
+        margin-bottom: 16px;
+        opacity: 0.4;
+      }
+      .cam-placeholder p {
+        font-size: 15px;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+      }
+
+      /* Scan line animation */
+      .scan-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--verde),
+          transparent
+        );
+        box-shadow: 0 0 8px var(--verde);
+        opacity: 0;
+        animation: none;
+        pointer-events: none;
+        z-index: 10;
+      }
+      .scan-line.active {
+        opacity: 1;
+        animation: scan 2.5s linear infinite;
+      }
+      @keyframes scan {
+        0% {
+          top: 5%;
+        }
+        100% {
+          top: 95%;
+        }
+      }
+
+      /* Corner brackets */
+      .brackets {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60%;
+        height: 35%;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .brackets.active {
+        opacity: 1;
+      }
+
+      .bracket {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-color: var(--verde);
+        border-style: solid;
+        box-shadow: 0 0 10px var(--verde);
+      }
+      .bracket-tl {
+        top: 0;
+        left: 0;
+        border-width: 2px 0 0 2px;
+      }
+      .bracket-tr {
+        top: 0;
+        right: 0;
+        border-width: 2px 2px 0 0;
+      }
+      .bracket-bl {
+        bottom: 0;
+        left: 0;
+        border-width: 0 0 2px 2px;
+      }
+      .bracket-br {
+        bottom: 0;
+        right: 0;
+        border-width: 0 2px 2px 0;
+      }
+
+      .cam-info {
+        padding: 12px 20px;
+        border-top: 1px solid var(--borde);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: var(--texto);
+        letter-spacing: 1px;
+      }
+
+      .denomination-tabs {
+        display: flex;
+        gap: 8px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--borde);
+      }
+
+      .tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 4px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        cursor: pointer;
+        border: 1px solid var(--borde);
+        background: transparent;
+        color: var(--texto);
+        transition: all 0.2s;
+        font-family: "Rajdhani", sans-serif;
+      }
+
+      .tab.active-10 {
+        background: rgba(255, 214, 0, 0.15);
+        border-color: #ffd600;
+        color: #ffd600;
+      }
+      .tab.active-20 {
+        background: rgba(0, 150, 255, 0.15);
+        border-color: #0096ff;
+        color: #0096ff;
+      }
+      .tab.active-50 {
+        background: rgba(0, 200, 100, 0.15);
+        border-color: #00c864;
+        color: #00c864;
+      }
+      .tab:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      /* RIGHT PANEL */
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .result-card {
+        background: var(--panel);
+        border: 1px solid var(--borde);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.4s;
+      }
+
+      .result-card.verdadero {
+        border-color: var(--verde);
+        box-shadow: 0 0 30px rgba(0, 230, 118, 0.15);
+      }
+
+      .result-card.falso {
+        border-color: var(--rojo);
+        box-shadow: 0 0 30px rgba(255, 23, 68, 0.15);
+      }
+
+      .result-header {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--borde);
+      }
+
+      .result-label {
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--texto);
+      }
+
+      .result-badge {
+        font-family: "Orbitron", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 5px 14px;
+        border-radius: 20px;
+        letter-spacing: 2px;
+      }
+
+      .badge-waiting {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--texto);
+        border: 1px solid var(--borde);
+      }
+      .badge-verdadero {
+        background: rgba(0, 230, 118, 0.15);
+        color: var(--verde);
+        border: 1px solid rgba(0, 230, 118, 0.3);
+      }
+      .badge-falso {
+        background: rgba(255, 23, 68, 0.15);
+        color: var(--rojo);
+        border: 1px solid rgba(255, 23, 68, 0.3);
+      }
+      .badge-scanning {
+        background: rgba(255, 214, 0, 0.15);
+        color: var(--amarillo);
+        border: 1px solid rgba(255, 214, 0, 0.3);
+      }
+
+      .result-body {
+        padding: 20px;
+      }
+
+      .serial-display {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 22px;
+        letter-spacing: 4px;
+        text-align: center;
+        color: var(--blanco);
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+      }
+
+      .serial-display.glow-green {
+        color: var(--verde);
+        text-shadow: 0 0 20px rgba(0, 230, 118, 0.6);
+        border-color: rgba(0, 230, 118, 0.3);
+      }
+      .serial-display.glow-red {
+        color: var(--rojo);
+        text-shadow: 0 0 20px rgba(255, 23, 68, 0.6);
+        border-color: rgba(255, 23, 68, 0.3);
+      }
+      .serial-display.glow-yellow {
+        color: var(--amarillo);
+      }
+
+      .serial-placeholder {
+        color: #444;
+        font-size: 14px;
+        letter-spacing: 2px;
+        font-family: "Rajdhani", sans-serif;
+      }
+
+      .verdict-big {
+        text-align: center;
+        font-family: "Orbitron", sans-serif;
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: 4px;
+        padding: 14px;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        display: none;
+      }
+
+      .verdict-big.show {
+        display: block;
+      }
+      .verdict-big.verdadero {
+        color: var(--verde);
+        background: rgba(0, 230, 118, 0.08);
+        animation: flash-in 0.4s ease;
+      }
+      .verdict-big.falso {
+        color: var(--rojo);
+        background: rgba(255, 23, 68, 0.08);
+        animation: flash-in 0.4s ease;
+      }
+
+      @keyframes flash-in {
+        0% {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        font-size: 13px;
+      }
+
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+      .detail-key {
+        color: var(--texto);
+        letter-spacing: 1px;
+      }
+      .detail-val {
+        font-family: "Share Tech Mono", monospace;
+        color: var(--blanco);
+        font-size: 12px;
+      }
+
+      /* HISTORY */
+      .history-card {
+        background: var(--panel);
+        border: 1px solid var(--borde);
+        border-radius: 16px;
+        overflow: hidden;
+        flex: 1;
+      }
+
+      .history-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--borde);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .history-title {
+        font-size: 12px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--texto);
+        font-weight: 600;
+      }
+
+      .history-count {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 12px;
+        color: var(--texto);
+      }
+
+      .history-list {
+        max-height: 280px;
+        overflow-y: auto;
+        padding: 8px 0;
+      }
+
+      .history-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .history-list::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .history-list::-webkit-scrollbar-thumb {
+        background: var(--borde);
+        border-radius: 2px;
+      }
+
+      .history-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        animation: slide-in 0.3s ease;
+        transition: background 0.2s;
+      }
+
+      .history-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      @keyframes slide-in {
+        from {
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .hi-bullet {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .hi-bullet.v {
+        background: var(--verde);
+        box-shadow: 0 0 6px var(--verde);
+      }
+      .hi-bullet.f {
+        background: var(--rojo);
+        box-shadow: 0 0 6px var(--rojo);
+      }
+
+      .hi-serial {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        flex: 1;
+      }
+
+      .hi-denom {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+
+      .hi-denom.bs10 {
+        background: rgba(255, 214, 0, 0.15);
+        color: #ffd600;
+      }
+      .hi-denom.bs20 {
+        background: rgba(0, 150, 255, 0.15);
+        color: #0096ff;
+      }
+      .hi-denom.bs50 {
+        background: rgba(0, 200, 100, 0.15);
+        color: #00c864;
+      }
+
+      .hi-result {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        font-family: "Orbitron", sans-serif;
+      }
+      .hi-result.v {
+        color: var(--verde);
+      }
+      .hi-result.f {
+        color: var(--rojo);
+      }
+
+      .empty-history {
+        text-align: center;
+        padding: 40px 20px;
+        color: #444;
+        font-size: 13px;
+        letter-spacing: 1px;
+      }
+
+      /* STATS */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .stat-box {
+        background: var(--panel);
+        border: 1px solid var(--borde);
+        border-radius: 12px;
+        padding: 14px;
+        text-align: center;
+      }
+
+      .stat-num {
+        font-family: "Orbitron", sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .stat-num.v {
+        color: var(--verde);
+      }
+      .stat-num.f {
+        color: var(--rojo);
+      }
+      .stat-num.t {
+        color: var(--blanco);
+      }
+
+      .stat-label {
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--texto);
+        margin-top: 4px;
+      }
+
+      /* MODAL */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .modal-overlay.show {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .modal {
+        background: var(--panel);
+        border: 1px solid var(--borde);
+        border-radius: 20px;
+        padding: 32px;
+        max-width: 500px;
+        width: 90%;
+        transform: translateY(20px);
+        transition: transform 0.3s;
+      }
+      .modal-overlay.show .modal {
+        transform: translateY(0);
+      }
+
+      .modal h2 {
+        font-family: "Orbitron", sans-serif;
+        font-size: 16px;
+        letter-spacing: 3px;
+        margin-bottom: 8px;
+        color: var(--blanco);
+      }
+
+      .modal p {
+        color: var(--texto);
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+
+      .modal-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .modal-tab {
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid var(--borde);
+        background: transparent;
+        color: var(--texto);
+        font-family: "Rajdhani", sans-serif;
+        letter-spacing: 1px;
+        transition: all 0.2s;
+      }
+      .modal-tab.sel {
+        background: rgba(0, 82, 204, 0.3);
+        border-color: #0052cc;
+        color: #fff;
+      }
+
+      .series-textarea {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        padding: 12px;
+        color: var(--blanco);
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        resize: vertical;
+        min-height: 120px;
+        letter-spacing: 2px;
+        line-height: 1.8;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .series-textarea:focus {
+        border-color: #0052cc;
+      }
+
+      .modal-hint {
+        font-size: 11px;
+        color: #555;
+        margin-top: 8px;
+        letter-spacing: 1px;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: flex-end;
+      }
+
+      /* Confidence bar */
+      .conf-bar-wrap {
+        margin-top: 12px;
+      }
+
+      .conf-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--texto);
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+      }
+
+      .conf-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .conf-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #0052cc, var(--verde));
+        border-radius: 2px;
+        transition: width 0.5s ease;
+        width: 0%;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🇧🇴</div>
+        <div>
+          <h1>VERIFI-BOL</h1>
+          <span>Detector de billetes · Bolivia</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center">
+        <button class="btn btn-secondary" onclick="openSeriesModal()">
+          ⚙ Series
+        </button>
+        <div class="status-pill">
+          <div class="dot" id="statusDot"></div>
+          <span id="statusText">INACTIVO</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- LEFT: Camera -->
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <div class="cam-panel">
+          <div class="cam-header">
+            <span class="cam-title">📷 Cámara en Vivo</span>
+            <div class="cam-controls">
+              <button
+                class="btn btn-primary"
+                id="btnStart"
+                onclick="startCamera()"
+              >
+                Iniciar Cámara
+              </button>
+              <button
+                class="btn btn-danger"
+                id="btnStop"
+                onclick="stopCamera()"
+                style="display: none"
+              >
+                Detener
+              </button>
+            </div>
+          </div>
+
+          <div class="denomination-tabs" id="denomTabs" style="display: none">
+            <button class="tab active-10" id="tab10" onclick="selectDenom(10)">
+              Bs. 10
+            </button>
+            <button class="tab" id="tab20" onclick="selectDenom(20)">
+              Bs. 20
+            </button>
+            <button class="tab" id="tab50" onclick="selectDenom(50)">
+              Bs. 50
+            </button>
+          </div>
+
+          <div class="video-container" id="videoContainer">
+            <div class="cam-placeholder" id="placeholder">
+              <div class="icon">📷</div>
+              <p>
+                Presiona "Iniciar Cámara" para comenzar<br />la detección en
+                tiempo real
+              </p>
+              <button class="btn btn-primary" onclick="startCamera()">
+                Iniciar Cámara
+              </button>
+            </div>
+            <video
+              id="video"
+              autoplay
+              playsinline
+              style="display: none"
+            ></video>
+            <canvas id="capture"></canvas>
+            <canvas id="overlay"></canvas>
+            <div class="scan-line" id="scanLine"></div>
+            <div class="brackets" id="brackets">
+              <div class="bracket bracket-tl"></div>
+              <div class="bracket bracket-tr"></div>
+              <div class="bracket bracket-bl"></div>
+              <div class="bracket bracket-br"></div>
+            </div>
+          </div>
+
+          <div class="cam-info" id="camInfo" style="display: none">
+            <span id="camInfoLeft"
+              >🔍 Apunta al número de serie del billete</span
+            >
+            <span
+              id="camInfoRight"
+              style="font-family: &quot;Share Tech Mono&quot;, monospace"
+              >OCR: ACTIVO</span
+            >
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-num t" id="statTotal">0</div>
+            <div class="stat-label">Escaneados</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num v" id="statVerd">0</div>
+            <div class="stat-label">Verdaderos</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num f" id="statFalso">0</div>
+            <div class="stat-label">Falsos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Results -->
+      <div class="right-panel">
+        <div class="result-card" id="resultCard">
+          <div class="result-header">
+            <span class="result-label">Resultado de Verificación</span>
+            <span class="result-badge badge-waiting" id="resultBadge"
+              >EN ESPERA</span
+            >
+          </div>
+          <div class="result-body">
+            <div class="verdict-big" id="verdictBig"></div>
+            <div class="serial-display" id="serialDisplay">
+              <span class="serial-placeholder">— Serie no detectada —</span>
+            </div>
+            <div class="conf-bar-wrap">
+              <div class="conf-label">
+                <span>Confianza OCR</span>
+                <span id="confPct">0%</span>
+              </div>
+              <div class="conf-bar">
+                <div class="conf-fill" id="confFill"></div>
+              </div>
+            </div>
+            <br />
+            <div class="detail-row">
+              <span class="detail-key">Denominación</span>
+              <span class="detail-val" id="detDenom">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Serie detectada</span>
+              <span class="detail-val" id="detSerial">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">En base de datos</span>
+              <span class="detail-val" id="detDB">—</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Hora</span>
+              <span class="detail-val" id="detTime">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="history-card">
+          <div class="history-header">
+            <span class="history-title">Historial de Escaneos</span>
+            <span class="history-count" id="histCount">0 registros</span>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="empty-history">Sin escaneos aún</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL SERIES -->
+    <div class="modal-overlay" id="modal">
+      <div class="modal">
+        <h2>⚙ CONFIGURAR SERIES</h2>
+        <p>
+          Ingresa los números de serie válidos para cada denominación. Uno por
+          línea. El sistema comparará en tiempo real.
+        </p>
+
+        <div class="modal-tabs">
+          <button
+            class="modal-tab sel"
+            id="mtab10"
+            onclick="switchModalTab(10)"
+          >
+            Bs. 10
+          </button>
+          <button class="modal-tab" id="mtab20" onclick="switchModalTab(20)">
+            Bs. 20
+          </button>
+          <button class="modal-tab" id="mtab50" onclick="switchModalTab(50)">
+            Bs. 50
+          </button>
+        </div>
+
+        <textarea
+          class="series-textarea"
+          id="seriesInput"
+          placeholder="Ej:&#10;A1234567&#10;B7654321&#10;C9988776"
+        ></textarea>
+        <p class="modal-hint">
+          💡 Puedes ingresar series parciales o completas. Se usará coincidencia
+          aproximada.
+        </p>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeModal()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" onclick="saveSeries()">
+            Guardar Series
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ===== STATE =====
+      let stream = null;
+      let scanning = false;
+      let scanInterval = null;
+      let worker = null;
+      let currentDenom = 10;
+      let modalDenom = 10;
+      let scanCount = 0;
+      let lastSerial = "";
+      let lastResultTime = 0;
+
+      const seriesDB = {
+        10: [],
+        20: [],
+        50: [],
+      };
+
+      // Stats
+      let stats = { total: 0, verdadero: 0, falso: 0 };
+      let history = [];
+
+      // ===== CAMERA =====
+      async function startCamera() {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+          });
+
+          const video = document.getElementById("video");
+          video.srcObject = stream;
+          video.style.display = "block";
+          document.getElementById("placeholder").style.display = "none";
+          document.getElementById("btnStart").style.display = "none";
+          document.getElementById("btnStop").style.display = "inline-block";
+          document.getElementById("denomTabs").style.display = "flex";
+          document.getElementById("camInfo").style.display = "flex";
+          document.getElementById("scanLine").classList.add("active");
+          document.getElementById("brackets").classList.add("active");
+
+          setStatus("active", "ACTIVO");
+          updateTab(10);
+          startScanning();
+        } catch (e) {
+          alert(
+            "No se pudo acceder a la cámara. Verifica los permisos del navegador.\n\n" +
+              e.message,
+          );
+        }
+      }
+
+      function stopCamera() {
+        if (stream) {
+          stream.getTracks().forEach((t) => t.stop());
+          stream = null;
+        }
+        stopScanning();
+        document.getElementById("video").style.display = "none";
+        document.getElementById("video").srcObject = null;
+        document.getElementById("placeholder").style.display = "block";
+        document.getElementById("btnStart").style.display = "inline-block";
+        document.getElementById("btnStop").style.display = "none";
+        document.getElementById("denomTabs").style.display = "none";
+        document.getElementById("camInfo").style.display = "none";
+        document.getElementById("scanLine").classList.remove("active");
+        document.getElementById("brackets").classList.remove("active");
+        setStatus("", "INACTIVO");
+      }
+
+      function selectDenom(d) {
+        currentDenom = d;
+        updateTab(d);
+      }
+
+      function updateTab(d) {
+        ["tab10", "tab20", "tab50"].forEach((id) => {
+          document.getElementById(id).className = "tab";
+        });
+        const map = { 10: "tab10", 20: "tab20", 50: "tab50" };
+        const cls = { 10: "active-10", 20: "active-20", 50: "active-50" };
+        document.getElementById(map[d]).classList.add(cls[d]);
+        document.getElementById("detDenom").textContent = `Bs. ${d}`;
+      }
+
+      // ===== OCR SCANNING =====
+      async function startScanning() {
+        if (worker) {
+          await worker.terminate();
+          worker = null;
+        }
+
+        setStatus("scanning", "INICIANDO OCR...");
+        document.getElementById("camInfoRight").textContent = "OCR: CARGANDO";
+
+        try {
+          worker = await Tesseract.createWorker("eng", 1, {
+            logger: () => {},
+          });
+
+          await worker.setParameters({
+            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+            tessedit_pageseg_mode: "6",
+          });
+
+          setStatus("active", "ESCANEANDO");
+          document.getElementById("camInfoRight").textContent = "OCR: ACTIVO";
+          scanning = true;
+          scanLoop();
+        } catch (e) {
+          setStatus("", "ERROR OCR");
+          console.error(e);
+        }
+      }
+
+      function stopScanning() {
+        scanning = false;
+        if (scanInterval) {
+          clearTimeout(scanInterval);
+          scanInterval = null;
+        }
+        if (worker) {
+          worker.terminate();
+          worker = null;
+        }
+      }
+
+      async function scanLoop() {
+        if (!scanning || !stream) return;
+
+        try {
+          const video = document.getElementById("video");
+          const canvas = document.getElementById("capture");
+          if (video.readyState < 2) {
+            scanInterval = setTimeout(scanLoop, 500);
+            return;
+          }
+
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext("2d");
+
+          // Crop center region where serial is likely
+          const cw = canvas.width;
+          const ch = canvas.height;
+          const rx = cw * 0.1,
+            ry = ch * 0.35,
+            rw = cw * 0.8,
+            rh = ch * 0.3;
+
+          ctx.drawImage(video, 0, 0, cw, ch);
+
+          // Apply preprocessing for better OCR
+          const imgData = ctx.getImageData(rx, ry, rw, rh);
+          const processed = preprocessImage(imgData);
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = rw * 2;
+          tempCanvas.height = rh * 2;
+          const tctx = tempCanvas.getContext("2d");
+          tctx.putImageData(scaleImageData(processed, 2), 0, 0);
+
+          const { data } = await worker.recognize(tempCanvas);
+          processOCRResult(data);
+        } catch (e) {
+          console.warn("OCR error:", e);
+        }
+
+        if (scanning) {
+          scanInterval = setTimeout(scanLoop, 1200);
+        }
+      }
+
+      function preprocessImage(imgData) {
+        const d = imgData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+          const val = gray > 130 ? 255 : 0;
+          d[i] = d[i + 1] = d[i + 2] = val;
+        }
+        return imgData;
+      }
+
+      function scaleImageData(imgData, scale) {
+        const sw = imgData.width,
+          sh = imgData.height;
+        const tw = sw * scale,
+          th = sh * scale;
+        const tc = document.createElement("canvas");
+        tc.width = tw;
+        tc.height = th;
+        const tctx = tc.getContext("2d");
+        const src = document.createElement("canvas");
+        src.width = sw;
+        src.height = sh;
+        src.getContext("2d").putImageData(imgData, 0, 0);
+        tctx.scale(scale, scale);
+        tctx.drawImage(src, 0, 0);
+        return tctx.getImageData(0, 0, tw, th);
+      }
+
+      function processOCRResult(data) {
+        const raw = data.text || "";
+        const confidence = data.confidence || 0;
+
+        // Extract alphanumeric sequences that look like serial numbers (6-10 chars)
+        const candidates = raw.match(/[A-Z0-9]{6,10}/g) || [];
+
+        // Update confidence UI
+        const confPct = Math.round(confidence);
+        document.getElementById("confPct").textContent = confPct + "%";
+        document.getElementById("confFill").style.width = confPct + "%";
+
+        if (candidates.length === 0) {
+          // No serial found - show scanning state if not recently detected
+          const timeSinceLast = Date.now() - lastResultTime;
+          if (timeSinceLast > 3000) {
+            showWaiting();
+          }
+          return;
+        }
+
+        // Pick best candidate (longest / highest confidence)
+        const serial = candidates.sort((a, b) => b.length - a.length)[0];
+
+        // Debounce: don't re-check same serial repeatedly
+        if (serial === lastSerial && Date.now() - lastResultTime < 4000) return;
+
+        lastSerial = serial;
+        lastResultTime = Date.now();
+
+        const result = verifySerial(serial, currentDenom);
+        showResult(serial, result, confidence);
+        addToHistory(serial, currentDenom, result);
+      }
+
+      // ===== VERIFICATION =====
+      function verifySerial(serial, denom) {
+        const db = seriesDB[denom];
+
+        if (db.length === 0) {
+          // No series loaded - mark as unknown
+          return "sin-datos";
+        }
+
+        // Exact match
+        if (db.includes(serial.toUpperCase())) return "verdadero";
+
+        // Partial match (serial contains or is contained in a DB entry)
+        for (const s of db) {
+          if (s && (serial.includes(s) || s.includes(serial)))
+            return "verdadero";
+        }
+
+        return "falso";
+      }
+
+      // ===== UI UPDATES =====
+      function showWaiting() {
+        document.getElementById("resultCard").className = "result-card";
+        document.getElementById("resultBadge").className =
+          "result-badge badge-scanning";
+        document.getElementById("resultBadge").textContent = "ESCANEANDO";
+        document.getElementById("verdictBig").className = "verdict-big";
+        document.getElementById("serialDisplay").className =
+          "serial-display glow-yellow";
+        document.getElementById("serialDisplay").innerHTML =
+          '<span style="font-size:13px;color:#ffd600;letter-spacing:2px;font-family:Rajdhani,sans-serif;">🔍 Buscando serie...</span>';
+        document.getElementById("detSerial").textContent = "—";
+        document.getElementById("detDB").textContent = "—";
+      }
+
+      function showResult(serial, result, confidence) {
+        const card = document.getElementById("resultCard");
+        const badge = document.getElementById("resultBadge");
+        const verdict = document.getElementById("verdictBig");
+        const serialDisplay = document.getElementById("serialDisplay");
+
+        document.getElementById("detSerial").textContent = serial;
+        document.getElementById("detTime").textContent =
+          new Date().toLocaleTimeString("es-BO");
+
+        if (result === "sin-datos") {
+          card.className = "result-card";
+          badge.className = "result-badge badge-scanning";
+          badge.textContent = "SIN BASE";
+          verdict.className = "verdict-big";
+          serialDisplay.className = "serial-display glow-yellow";
+          serialDisplay.textContent = serial;
+          document.getElementById("detDB").textContent = "Sin series cargadas";
+          return;
+        }
+
+        if (result === "verdadero") {
+          card.className = "result-card verdadero";
+          badge.className = "result-badge badge-verdadero";
+          badge.textContent = "AUTÉNTICO";
+          verdict.className = "verdict-big verdadero show";
+          verdict.textContent = "✓ VERDADERO";
+          serialDisplay.className = "serial-display glow-green";
+          serialDisplay.textContent = serial;
+          document.getElementById("detDB").textContent = "✓ Encontrado";
+          stats.verdadero++;
+          document.getElementById("statVerd").textContent = stats.verdadero;
+        } else {
+          card.className = "result-card falso";
+          badge.className = "result-badge badge-falso";
+          badge.textContent = "SOSPECHOSO";
+          verdict.className = "verdict-big falso show";
+          verdict.textContent = "✗ FALSO";
+          serialDisplay.className = "serial-display glow-red";
+          serialDisplay.textContent = serial;
+          document.getElementById("detDB").textContent = "✗ No encontrado";
+          stats.falso++;
+          document.getElementById("statFalso").textContent = stats.falso;
+        }
+
+        stats.total++;
+        document.getElementById("statTotal").textContent = stats.total;
+      }
+
+      function addToHistory(serial, denom, result) {
+        if (result === "sin-datos") return;
+
+        const item = { serial, denom, result, time: new Date() };
+        history.unshift(item);
+        if (history.length > 50) history.pop();
+
+        const list = document.getElementById("historyList");
+        document.getElementById("histCount").textContent =
+          `${history.length} registros`;
+
+        const isV = result === "verdadero";
+        const denomClass = { 10: "bs10", 20: "bs20", 50: "bs50" }[denom];
+
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+    <div class="hi-bullet ${isV ? "v" : "f"}"></div>
+    <div class="hi-serial">${serial}</div>
+    <div class="hi-denom ${denomClass}">Bs.${denom}</div>
+    <div class="hi-result ${isV ? "v" : "f"}">${isV ? "REAL" : "FALSO"}</div>
+  `;
+
+        if (list.querySelector(".empty-history")) list.innerHTML = "";
+        list.prepend(div);
+      }
+
+      function setStatus(type, text) {
+        const dot = document.getElementById("statusDot");
+        const label = document.getElementById("statusText");
+        dot.className = "dot" + (type ? " " + type : "");
+        label.textContent = text;
+      }
+
+      // ===== MODAL =====
+      function openSeriesModal() {
+        document.getElementById("modal").classList.add("show");
+        switchModalTab(10);
+      }
+
+      function closeModal() {
+        document.getElementById("modal").classList.remove("show");
+      }
+
+      function switchModalTab(d) {
+        modalDenom = d;
+        ["mtab10", "mtab20", "mtab50"].forEach((id) => {
+          document.getElementById(id).className = "modal-tab";
+        });
+        document.getElementById("mtab" + d).classList.add("sel");
+        document.getElementById("seriesInput").value = seriesDB[d].join("\n");
+      }
+
+      function saveSeries() {
+        const raw = document.getElementById("seriesInput").value;
+        const lines = raw
+          .split("\n")
+          .map((l) => l.trim().toUpperCase())
+          .filter((l) => l.length >= 4);
+        seriesDB[modalDenom] = lines;
+        closeModal();
+
+        // Show confirmation
+        const total =
+          seriesDB[10].length + seriesDB[20].length + seriesDB[50].length;
+        document.getElementById("camInfoLeft").textContent =
+          `📋 ${total} series cargadas — Bs.10: ${seriesDB[10].length} | Bs.20: ${seriesDB[20].length} | Bs.50: ${seriesDB[50].length}`;
+      }
+
+      // Click outside modal to close
+      document.getElementById("modal").addEventListener("click", function (e) {
+        if (e.target === this) closeModal();
+      });
+
+      // Keyboard shortcut
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+    </script>
+  </body>
+</html>
