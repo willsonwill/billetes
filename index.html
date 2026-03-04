@@ -6,8 +6,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <title>Serie-BOL</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+    <title>Serie-BOL1</title>
+    <!-- Tesseract v2 — más estable, sin el bug SetVariable -->
+    <script src="https://unpkg.com/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap");
       * {
@@ -17,14 +18,11 @@
       }
       html,
       body {
-        height: 100%;
         background: #060b14;
         color: #ddeeff;
         font-family: "Rajdhani", sans-serif;
-        overflow-x: hidden;
       }
 
-      /* ── HEADER ── */
       header {
         display: flex;
         align-items: center;
@@ -92,6 +90,10 @@
         box-shadow: 0 0 6px #ffd600;
         animation: bl 0.6s infinite;
       }
+      .dot.r {
+        background: #ff3a5a;
+        box-shadow: 0 0 6px #ff3a5a;
+      }
       @keyframes bl {
         0%,
         100% {
@@ -102,7 +104,6 @@
         }
       }
 
-      /* ── MAIN ── */
       .page {
         max-width: 500px;
         margin: 0 auto;
@@ -112,7 +113,7 @@
         gap: 12px;
       }
 
-      /* ── VIDEO ── */
+      /* CAMERA */
       .vcard {
         background: #0a1220;
         border: 1px solid #152540;
@@ -173,7 +174,6 @@
         display: none;
       }
 
-      /* scan line */
       .sline {
         position: absolute;
         left: 0;
@@ -181,6 +181,8 @@
         height: 2px;
         pointer-events: none;
         z-index: 4;
+        background: linear-gradient(90deg, transparent, #00e676, transparent);
+        box-shadow: 0 0 8px #00e676;
         opacity: 0;
       }
       .sline.on {
@@ -190,23 +192,18 @@
       @keyframes sw {
         0% {
           top: 5%;
-          background: linear-gradient(90deg, transparent, #00e676, transparent);
-          box-shadow: 0 0 8px #00e676;
         }
         100% {
           top: 95%;
-          background: linear-gradient(90deg, transparent, #00e676, transparent);
-          box-shadow: 0 0 8px #00e676;
         }
       }
 
-      /* ROI box */
       .roi {
         position: absolute;
-        left: 8%;
-        right: 8%;
-        top: 30%;
-        height: 38%;
+        left: 5%;
+        right: 5%;
+        top: 25%;
+        height: 50%;
         border: 2px solid rgba(0, 230, 118, 0.5);
         border-radius: 6px;
         pointer-events: none;
@@ -215,37 +212,6 @@
       .roi.on {
         display: block;
       }
-      .roi::before,
-      .roi::after,
-      .roi span::before,
-      .roi span::after {
-        content: "";
-        position: absolute;
-        width: 14px;
-        height: 14px;
-        border-color: #00e676;
-        border-style: solid;
-      }
-      .roi::before {
-        top: -2px;
-        left: -2px;
-        border-width: 2px 0 0 2px;
-      }
-      .roi::after {
-        top: -2px;
-        right: -2px;
-        border-width: 2px 2px 0 0;
-      }
-      .roi span::before {
-        bottom: -2px;
-        left: -2px;
-        border-width: 0 0 2px 2px;
-      }
-      .roi span::after {
-        bottom: -2px;
-        right: -2px;
-        border-width: 0 2px 2px 0;
-      }
       .roi-lbl {
         position: absolute;
         bottom: -20px;
@@ -253,7 +219,7 @@
         transform: translateX(-50%);
         font-size: 9px;
         letter-spacing: 2px;
-        color: rgba(0, 230, 118, 0.55);
+        color: rgba(0, 230, 118, 0.6);
         white-space: nowrap;
         font-family: "Rajdhani", sans-serif;
         text-transform: uppercase;
@@ -274,7 +240,6 @@
         margin-bottom: 16px;
         color: #2a4a68;
       }
-
       .vfoot {
         padding: 8px 15px;
         border-top: 1px solid #152540;
@@ -282,36 +247,36 @@
         color: #2e5070;
         letter-spacing: 1px;
         text-align: center;
-        display: none;
       }
 
-      /* preview strip */
-      .preview-wrap {
-        padding: 8px 12px;
-        border-top: 1px solid #0f1e30;
+      /* PROGRESS */
+      .progress-wrap {
+        padding: 8px 15px;
+        border-top: 1px solid #152540;
         display: none;
       }
-      .preview-label {
-        font-size: 9px;
-        letter-spacing: 2px;
+      .progress-label {
+        font-size: 10px;
+        letter-spacing: 1px;
         color: #2e5070;
+        margin-bottom: 4px;
         text-transform: uppercase;
-        margin-bottom: 5px;
       }
-      .preview-strip {
-        display: flex;
-        gap: 6px;
-        overflow-x: auto;
+      .progress-bar {
+        height: 3px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 2px;
+        overflow: hidden;
       }
-      .preview-strip canvas {
-        height: 40px;
-        width: auto;
-        border-radius: 4px;
-        border: 1px solid #152540;
-        flex-shrink: 0;
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #004bbd, #00e676);
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.3s;
       }
 
-      /* ── SERIAL DISPLAY ── */
+      /* SERIAL */
       .scard {
         background: #0a1220;
         border: 1px solid #152540;
@@ -341,7 +306,6 @@
         font-size: 11px;
         color: #2e5070;
       }
-
       .serial {
         padding: 20px 15px;
         text-align: center;
@@ -377,7 +341,6 @@
         letter-spacing: 2px;
         font-family: "Rajdhani", sans-serif;
       }
-
       .conf-row {
         padding: 0 15px 12px;
         display: flex;
@@ -404,7 +367,6 @@
         width: 0;
         transition: width 0.5s;
       }
-
       .smeta {
         padding: 9px 15px 13px;
         display: flex;
@@ -415,8 +377,8 @@
         border-top: 1px solid #0f1e30;
       }
 
-      /* ── DEBUG (toggleable) ── */
-      .dbg-card {
+      /* DEBUG */
+      .dbg {
         background: #0a1220;
         border: 1px solid #152540;
         border-radius: 14px;
@@ -439,17 +401,56 @@
       .dbg-body {
         padding: 10px 15px;
         font-family: "Share Tech Mono", monospace;
-        font-size: 12px;
+        font-size: 11px;
         color: #3a6080;
-        line-height: 1.7;
-        min-height: 48px;
+        line-height: 1.8;
         display: none;
+        white-space: pre-wrap;
+        word-break: break-all;
       }
       .dbg-body.on {
         display: block;
       }
 
-      /* ── HISTORY ── */
+      /* CANVAS PREVIEW */
+      .prev {
+        background: #0a1220;
+        border: 1px solid #152540;
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .prev-head {
+        padding: 10px 15px;
+        border-bottom: 1px solid #152540;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .prev-head span {
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #2e5070;
+      }
+      .prev-body {
+        padding: 10px;
+        display: none;
+      }
+      .prev-body.on {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .prev-body canvas {
+        border-radius: 4px;
+        border: 1px solid #152540;
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* HISTORY */
       .hcard {
         background: #0a1220;
         border: 1px solid #152540;
@@ -479,13 +480,6 @@
         overflow-y: auto;
         padding: 3px 0;
       }
-      .hlist::-webkit-scrollbar {
-        width: 2px;
-      }
-      .hlist::-webkit-scrollbar-thumb {
-        background: #152540;
-        border-radius: 1px;
-      }
       .hitem {
         display: flex;
         align-items: center;
@@ -503,9 +497,6 @@
           opacity: 1;
           transform: none;
         }
-      }
-      .hitem:hover {
-        background: rgba(255, 255, 255, 0.02);
       }
       .hdot {
         width: 5px;
@@ -535,7 +526,6 @@
         letter-spacing: 1px;
       }
 
-      /* toast */
       .toast {
         position: fixed;
         bottom: 20px;
@@ -593,7 +583,7 @@
             </button>
           </div>
         </div>
-        <div class="vwrap" id="vwrap">
+        <div class="vwrap">
           <div class="placeholder" id="ph">
             <div class="ico">📷</div>
             <p>Apunta la cámara al número<br />de serie del billete</p>
@@ -611,20 +601,21 @@
           <canvas id="cap"></canvas>
           <div class="sline" id="sline"></div>
           <div class="roi" id="roi">
-            <span></span>
-            <div class="roi-lbl">número de serie</div>
+            <div class="roi-lbl">coloca el número de serie aquí</div>
           </div>
         </div>
-        <div class="preview-wrap" id="prevWrap">
-          <div class="preview-label">Zona analizada</div>
-          <div class="preview-strip" id="prevStrip"></div>
+        <div class="progress-wrap" id="progWrap">
+          <div class="progress-label" id="progLabel">Cargando OCR...</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progFill"></div>
+          </div>
         </div>
-        <div class="vfoot" id="vfoot">
-          💡 Iluminación buena · Billete plano · Serie centrada en el recuadro
+        <div class="vfoot" id="vfoot" style="display: none">
+          💡 Buena luz · Billete plano · Serie dentro del recuadro
         </div>
       </div>
 
-      <!-- SERIAL -->
+      <!-- SERIAL RESULT -->
       <div class="scard" id="scard">
         <div class="scard-head">
           <span>Número de serie</span>
@@ -635,7 +626,7 @@
         </div>
         <div class="conf-row">
           <span class="conf-txt">Confianza</span>
-          <div class="bar"><div class="fill" id="fill"></div></div>
+          <div class="bar"><div class="fill" id="cfill"></div></div>
           <span class="conf-txt" id="cpct">0%</span>
         </div>
         <div class="smeta">
@@ -644,15 +635,26 @@
         </div>
       </div>
 
-      <!-- DEBUG -->
-      <div class="dbg-card">
+      <!-- CANVAS PREVIEW -->
+      <div class="prev">
+        <div class="prev-head" onclick="togglePrev()">
+          <span>🖼 Vista procesada (lo que lee el OCR)</span>
+          <span style="font-size: 10px; color: #2e5070" id="pvArrow"
+            >▶ ver</span
+          >
+        </div>
+        <div class="prev-body" id="pvBody"></div>
+      </div>
+
+      <!-- DEBUG TEXT -->
+      <div class="dbg">
         <div class="dbg-head" onclick="toggleDbg()">
           <span>🔬 Texto crudo OCR</span>
           <span style="font-size: 10px; color: #2e5070" id="dbgArrow"
             >▶ ver</span
           >
         </div>
-        <div class="dbg-body" id="dbgBody">—</div>
+        <div class="dbg-body" id="dbgBody"></div>
       </div>
 
       <!-- HISTORY -->
@@ -666,354 +668,354 @@
         </div>
       </div>
     </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
-      /* ─────────────────────────────────────────────
-   STATE
-───────────────────────────────────────────── */
+      /* ── STATE ── */
       let stream = null,
-        worker = null,
-        scanning = false,
+        scheduler = null,
+        worker1 = null;
+      let scanning = false,
         loopTimer = null;
       let lastSerial = "",
         lastTime = 0,
         history = [];
-      let dbgOpen = false;
+      let pvOpen = false,
+        dbgOpen = false;
+      let rawLogs = [];
 
-      /* ─────────────────────────────────────────────
-   CAMERA
-───────────────────────────────────────────── */
+      /* ── CAMERA ── */
       async function startCam() {
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: { ideal: "environment" },
-              width: { ideal: 1920 },
-              height: { ideal: 1080 },
-              focusMode: "continuous",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
             },
           });
-          const v = el("vid");
+          const v = g("vid");
           v.srcObject = stream;
           v.style.display = "block";
-          hide("ph");
-          hide("bStart");
-          show("bStop");
-          show("vfoot");
-          el("sline").classList.add("on");
-          el("roi").classList.add("on");
-          el("prevWrap").style.display = "block";
+          g("ph").style.display = "none";
+          g("bStart").style.display = "none";
+          g("bStop").style.display = "";
+          g("sline").classList.add("on");
+          g("roi").classList.add("on");
+          g("vfoot").style.display = "block";
+          g("progWrap").style.display = "block";
           setStatus("y", "CARGANDO OCR...");
           await initOCR();
         } catch (e) {
           toast("❌ Error cámara: " + e.message);
+          console.error(e);
         }
       }
 
       function stopCam() {
-        if (stream) stream.getTracks().forEach((t) => t.stop());
-        stream = null;
         scanning = false;
         clearTimeout(loopTimer);
-        if (worker) {
-          worker.terminate();
-          worker = null;
+        if (stream) {
+          stream.getTracks().forEach((t) => t.stop());
+          stream = null;
         }
-        const v = el("vid");
+        if (worker1) {
+          worker1.terminate();
+          worker1 = null;
+        }
+        const v = g("vid");
         v.style.display = "none";
         v.srcObject = null;
-        show("ph");
-        show("bStart");
-        hide("bStop");
-        hide("vfoot");
-        el("sline").classList.remove("on");
-        el("roi").classList.remove("on");
-        el("prevWrap").style.display = "none";
+        g("ph").style.display = "block";
+        g("bStart").style.display = "";
+        g("bStop").style.display = "none";
+        g("sline").classList.remove("on");
+        g("roi").classList.remove("on");
+        g("vfoot").style.display = "none";
+        g("progWrap").style.display = "none";
         setStatus("", "INACTIVO");
       }
 
-      /* ─────────────────────────────────────────────
-   OCR INIT
-───────────────────────────────────────────── */
+      /* ── OCR INIT (Tesseract v2) ── */
       async function initOCR() {
         try {
-          worker = await Tesseract.createWorker("eng", 1, { logger: () => {} });
-
-          // Optimized for serial numbers
-          await worker.setParameters({
-            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-            tessedit_pageseg_mode: "7", // single text line
-            tessedit_ocr_engine_mode: "1", // LSTM only
-            preserve_interword_spaces: "0",
+          // Tesseract v2 API
+          worker1 = Tesseract.createWorker({
+            logger: (m) => {
+              if (m.status === "loading tesseract core") {
+                setProgress(10, "Cargando Tesseract...");
+              } else if (m.status === "initializing tesseract") {
+                setProgress(30, "Iniciando...");
+              } else if (m.status === "loading language traineddata") {
+                setProgress(50, "Cargando idioma...");
+              } else if (m.status === "initializing api") {
+                setProgress(80, "Configurando OCR...");
+              } else if (m.status === "recognizing text") {
+                setProgress(
+                  Math.round((m.progress || 0) * 100),
+                  "Reconociendo...",
+                );
+              }
+            },
           });
 
-          scanning = true;
+          await worker1.load();
+          await worker1.loadLanguage("eng");
+          await worker1.initialize("eng");
+          await worker1.setParameters({
+            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
+          });
+
+          setProgress(100, "OCR listo ✓");
+          setTimeout(() => {
+            g("progWrap").style.display = "none";
+          }, 1000);
           setStatus("g", "ESCANEANDO");
+          scanning = true;
           loop();
         } catch (e) {
-          setStatus("", "ERROR");
+          setStatus("r", "ERROR OCR");
           toast("Error OCR: " + e.message);
+          console.error(e);
         }
       }
 
-      /* ─────────────────────────────────────────────
-   MAIN LOOP
-───────────────────────────────────────────── */
+      /* ── MAIN LOOP ── */
       async function loop() {
         if (!scanning || !stream) return;
 
         try {
-          const vid = el("vid");
+          const vid = g("vid");
           if (vid.readyState < 2) {
-            loopTimer = setTimeout(loop, 400);
+            loopTimer = setTimeout(loop, 500);
             return;
           }
 
           const W = vid.videoWidth,
             H = vid.videoHeight;
           if (!W || !H) {
-            loopTimer = setTimeout(loop, 400);
+            loopTimer = setTimeout(loop, 500);
             return;
           }
 
-          // ── Capture full frame
-          const raw = document.createElement("canvas");
-          raw.width = W;
-          raw.height = H;
-          raw.getContext("2d").drawImage(vid, 0, 0, W, H);
+          // Build processed canvas
+          const processed = buildCanvas(vid, W, H);
 
-          // ── Try multiple horizontal crops (top-third, middle, bottom-third)
-          // Serial numbers can be anywhere on the bill
-          const crops = [
-            { y: 0.08, h: 0.18 }, // top strip
-            { y: 0.28, h: 0.18 }, // upper-mid
-            { y: 0.48, h: 0.18 }, // center
-            { y: 0.68, h: 0.18 }, // lower-mid
-            { y: 0.8, h: 0.16 }, // bottom
-          ];
-
-          let bestSerial = "",
-            bestConf = 0;
-
-          for (const c of crops) {
-            const cx = Math.round(W * 0.03),
-              cy = Math.round(H * c.y);
-            const cw = Math.round(W * 0.94),
-              ch = Math.round(H * c.h);
-
-            const processed = preprocess(raw, cx, cy, cw, ch);
-            showPreview(processed, c.y);
-
-            const { data } = await worker.recognize(processed);
-            const serial = extractSerial(data.text);
-            const conf = data.confidence || 0;
-
-            el("dbgBody").textContent = (
-              el("dbgBody").textContent +
-              "\n" +
-              data.text.trim()
-            )
-              .split("\n")
-              .slice(-8)
-              .join("\n");
-
-            if (serial && conf > bestConf) {
-              bestSerial = serial;
-              bestConf = conf;
-            }
+          // Show preview
+          if (pvOpen) {
+            const pb = g("pvBody");
+            pb.innerHTML = "";
+            const mini = document.createElement("canvas");
+            const s = Math.min(1, 460 / processed.width);
+            mini.width = Math.round(processed.width * s);
+            mini.height = Math.round(processed.height * s);
+            mini
+              .getContext("2d")
+              .drawImage(processed, 0, 0, mini.width, mini.height);
+            pb.appendChild(mini);
           }
 
-          updateUI(bestSerial, bestConf);
+          // Run OCR
+          const { data } = await worker1.recognize(processed);
+          const raw = (data.text || "").trim();
+          const conf = Math.round(data.confidence || 0);
+
+          // Log
+          rawLogs.unshift(
+            "[" +
+              new Date().toLocaleTimeString() +
+              "] conf:" +
+              conf +
+              '% → "' +
+              raw +
+              '"',
+          );
+          if (rawLogs.length > 20) rawLogs.pop();
+          if (dbgOpen) g("dbgBody").textContent = rawLogs.join("\n");
+
+          // Update confidence bar always
+          g("cfill").style.width = conf + "%";
+          g("cpct").textContent = conf + "%";
+
+          const serial = extractSerial(raw);
+          if (serial) {
+            showSerial(serial, conf);
+          } else {
+            g("smL").textContent = "🔍 Buscando... (conf:" + conf + "%)";
+          }
         } catch (e) {
-          console.warn("loop err:", e);
+          console.warn("loop error:", e);
         }
 
-        if (scanning) loopTimer = setTimeout(loop, 900);
+        if (scanning) loopTimer = setTimeout(loop, 1200);
       }
 
-      /* ─────────────────────────────────────────────
-   IMAGE PREPROCESSING
-   Returns a canvas ready for Tesseract
-───────────────────────────────────────────── */
-      function preprocess(srcCanvas, x, y, w, h) {
-        const SCALE = 4; // upsample 4x
+      /* ── IMAGE PROCESSING ── */
+      function buildCanvas(vid, W, H) {
+        // Crop the ROI zone (center 90% width, 50% height centered)
+        const sx = Math.round(W * 0.05);
+        const sy = Math.round(H * 0.25);
+        const sw = Math.round(W * 0.9);
+        const sh = Math.round(H * 0.5);
+
+        // Scale factor — upscale for better OCR
+        const SCALE = 3;
         const out = document.createElement("canvas");
-        out.width = w * SCALE;
-        out.height = h * SCALE;
+        out.width = sw * SCALE;
+        out.height = sh * SCALE;
         const ctx = out.getContext("2d");
 
-        // Draw upsampled crop
+        // Draw upscaled crop
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(srcCanvas, x, y, w, h, 0, 0, out.width, out.height);
+        ctx.drawImage(vid, sx, sy, sw, sh, 0, 0, out.width, out.height);
 
-        // Pixel manipulation: grayscale → sharpen → threshold
+        // ── Pixel processing ──
         const img = ctx.getImageData(0, 0, out.width, out.height);
         const d = img.data;
-        const copy = new Uint8ClampedArray(d);
+        const len = d.length;
 
-        // Step 1: grayscale
-        for (let i = 0; i < d.length; i += 4) {
-          const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-          d[i] = d[i + 1] = d[i + 2] = g;
+        // 1. Grayscale
+        const gray = new Float32Array(len / 4);
+        for (let i = 0, p = 0; i < len; i += 4, p++) {
+          gray[p] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
         }
 
-        // Step 2: unsharp mask (simple)
+        // 2. Compute local stats for adaptive threshold (block size 32px)
         const W2 = out.width,
           H2 = out.height;
-        for (let py = 1; py < H2 - 1; py++) {
-          for (let px = 1; px < W2 - 1; px++) {
-            const i = (py * W2 + px) * 4;
-            const center = d[i];
-            const neighbors =
-              (d[i - 4] + d[i + 4] + d[i - W2 * 4] + d[i + W2 * 4]) / 4;
-            const sharpened = Math.min(
-              255,
-              Math.max(0, center + 1.5 * (center - neighbors)),
-            );
-            d[i] = d[i + 1] = d[i + 2] = sharpened;
+        const BLK = 32;
+
+        for (let py = 0; py < H2; py++) {
+          for (let px = 0; px < W2; px++) {
+            const p = py * W2 + px;
+            // local mean in block
+            const x0 = Math.max(0, px - BLK),
+              x1 = Math.min(W2 - 1, px + BLK);
+            const y0 = Math.max(0, py - BLK),
+              y1 = Math.min(H2 - 1, py + BLK);
+            let sum = 0,
+              cnt = 0;
+            for (let ly = y0; ly <= y1; ly += 4) {
+              for (let lx = x0; lx <= x1; lx += 4) {
+                sum += gray[ly * W2 + lx];
+                cnt++;
+              }
+            }
+            const mean = sum / cnt;
+            // Threshold: if pixel is darker than local mean-5, it's ink
+            const val = gray[p] < mean - 5 ? 0 : 255;
+            const i4 = p * 4;
+            d[i4] = d[i4 + 1] = d[i4 + 2] = val;
+            d[i4 + 3] = 255;
           }
-        }
-
-        // Step 3: adaptive-like threshold
-        // compute mean brightness
-        let sum = 0;
-        for (let i = 0; i < d.length; i += 4) sum += d[i];
-        const mean = sum / (d.length / 4);
-        const thr = mean * 0.85; // slightly below mean
-
-        for (let i = 0; i < d.length; i += 4) {
-          const v = d[i] > thr ? 255 : 0;
-          d[i] = d[i + 1] = d[i + 2] = v;
         }
 
         ctx.putImageData(img, 0, 0);
 
-        // Step 4: add white padding (helps Tesseract)
+        // 3. Add white border padding for Tesseract
         const padded = document.createElement("canvas");
-        padded.width = out.width + 40;
-        padded.height = out.height + 30;
+        const PAD = 30;
+        padded.width = out.width + PAD * 2;
+        padded.height = out.height + PAD * 2;
         const pctx = padded.getContext("2d");
-        pctx.fillStyle = "#fff";
+        pctx.fillStyle = "#ffffff";
         pctx.fillRect(0, 0, padded.width, padded.height);
-        pctx.drawImage(out, 20, 15);
+        pctx.drawImage(out, PAD, PAD);
+
         return padded;
       }
 
-      /* ─────────────────────────────────────────────
-   SERIAL EXTRACTION
-───────────────────────────────────────────── */
+      /* ── SERIAL EXTRACTION ── */
       function extractSerial(raw) {
         if (!raw) return "";
+        // Clean — keep only A-Z 0-9
         const clean = raw
           .toUpperCase()
           .replace(/[^A-Z0-9]/g, " ")
           .replace(/\s+/g, " ")
           .trim();
+        if (!clean) return "";
 
-        // Bolivian serial patterns:
-        // Format: 1-2 letters + 7 digits  e.g. A1234567, BC1234567
-        // or: digits only 7-10 chars
+        // Bolivian bill serial patterns — try strongest first
         const patterns = [
-          /\b[A-Z]{1,2}[0-9]{6,9}\b/g, // letter(s) + digits — most common
-          /\b[0-9]{7,10}\b/g, // pure digits
-          /\b[A-Z0-9]{7,11}\b/g, // mixed alphanumeric
+          /\b[A-Z]{1,2}[0-9]{6,8}\b/, // A1234567 or BC1234567
+          /\b[A-Z][0-9]{5,9}\b/, // A12345
+          /\b[0-9]{7,10}\b/, // 1234567890 pure digits
+          /\b[A-Z0-9]{7,11}\b/, // any mix 7-11 chars
         ];
 
         for (const re of patterns) {
-          const hits = clean.match(re);
-          if (hits && hits.length > 0) {
-            // Return longest hit
-            return hits.sort((a, b) => b.length - a.length)[0];
-          }
+          const m = clean.match(re);
+          if (m) return m[0];
         }
         return "";
       }
 
-      /* ─────────────────────────────────────────────
-   UI
-───────────────────────────────────────────── */
-      function updateUI(serial, conf) {
-        const pct = Math.round(conf);
-        el("fill").style.width = pct + "%";
-        el("cpct").textContent = pct + "%";
-
-        if (!serial) {
-          el("smL").textContent = "🔍 Buscando serie...";
-          return;
-        }
-
-        // Debounce same serial
+      /* ── SHOW SERIAL ── */
+      function showSerial(serial, conf) {
         if (serial === lastSerial && Date.now() - lastTime < 3000) return;
         lastSerial = serial;
         lastTime = Date.now();
 
-        el("scard").classList.add("found");
-        const s = el("serial");
+        g("scard").classList.add("found");
+        const s = g("serial");
         s.textContent = serial;
         s.className = "serial lit";
-        setTimeout(() => s.classList.remove("lit"), 350);
-
-        el("sbadge").textContent = serial.length + " chars";
-        el("smL").textContent = "✅ Conf: " + pct + "%";
-        el("smR").textContent = new Date().toLocaleTimeString("es-BO");
+        setTimeout(() => s.classList.remove("lit"), 400);
+        g("sbadge").textContent = serial.length + " chars";
+        g("smL").textContent = "✅ Detectado · conf " + conf + "%";
+        g("smR").textContent = new Date().toLocaleTimeString("es-BO");
 
         addHistory(serial);
       }
 
       function addHistory(serial) {
         if (history[0]?.serial === serial) return;
-        history.unshift({ serial, t: new Date() });
+        history.unshift({ serial });
         if (history.length > 50) history.pop();
-
-        el("hcnt").textContent = history.length;
-        const list = el("hlist");
+        g("hcnt").textContent = history.length;
+        const list = g("hlist");
         if (list.querySelector(".hempty")) list.innerHTML = "";
-
         const d = document.createElement("div");
         d.className = "hitem";
         d.innerHTML = `<div class="hdot"></div><div class="hnum">${serial}</div><div class="htime">${new Date().toLocaleTimeString("es-BO")}</div>`;
         list.prepend(d);
       }
 
-      function showPreview(canvas, yFrac) {
-        // Show only first preview crop
-        if (yFrac !== 0.08) return;
-        const strip = el("prevStrip");
-        strip.innerHTML = "";
-        const mini = document.createElement("canvas");
-        const scale = 40 / canvas.height;
-        mini.height = 40;
-        mini.width = Math.round(canvas.width * scale);
-        mini.getContext("2d").drawImage(canvas, 0, 0, mini.width, mini.height);
-        strip.appendChild(mini);
+      /* ── HELPERS ── */
+      function setProgress(pct, label) {
+        g("progFill").style.width = pct + "%";
+        g("progLabel").textContent = label;
+      }
+
+      function togglePrev() {
+        pvOpen = !pvOpen;
+        g("pvBody").className = "prev-body" + (pvOpen ? " on" : "");
+        g("pvArrow").textContent = pvOpen ? "▼ ocultar" : "▶ ver";
       }
 
       function toggleDbg() {
         dbgOpen = !dbgOpen;
-        el("dbgBody").className = "dbg-body" + (dbgOpen ? " on" : "");
-        el("dbgArrow").textContent = dbgOpen ? "▼ ocultar" : "▶ ver";
+        const b = g("dbgBody");
+        b.className = "dbg-body" + (dbgOpen ? " on" : "");
+        g("dbgArrow").textContent = dbgOpen ? "▼ ocultar" : "▶ ver";
+        if (dbgOpen) b.textContent = rawLogs.join("\n") || "(sin datos aún)";
       }
 
-      /* ─────────────────────────────────────────────
-   HELPERS
-───────────────────────────────────────────── */
       function setStatus(type, txt) {
-        const d = el("dot");
+        const d = g("dot");
         d.className = "dot" + (type ? " " + type : "");
-        el("stxt").textContent = txt;
+        g("stxt").textContent = txt;
       }
-      function el(id) {
+
+      function g(id) {
         return document.getElementById(id);
       }
-      function show(id) {
-        el(id).style.display = "";
-      }
-      function hide(id) {
-        el(id).style.display = "none";
-      }
+
       function toast(msg, ms = 4000) {
-        const t = el("toast");
+        const t = g("toast");
         t.textContent = msg;
         t.classList.add("show");
         setTimeout(() => t.classList.remove("show"), ms);
