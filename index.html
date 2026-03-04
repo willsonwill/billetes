@@ -7,6 +7,15 @@
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
     <title>Serie-BOL</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#060b14" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Serie-BOL" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap");
       * {
@@ -540,6 +549,28 @@
     <h1>🇧🇴 SERIE-BOL</h1>
     <div class="sub">BCB CP9/2026 · Verificador oficial</div>
 
+    <button
+      id="btnInstall"
+      onclick="installApp()"
+      style="
+        display: none;
+        width: 100%;
+        max-width: 440px;
+        padding: 11px;
+        border-radius: 10px;
+        border: 1px solid #00e676;
+        background: rgba(0, 230, 118, 0.08);
+        color: #00e676;
+        font-family: &quot;Rajdhani&quot;, sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 2px;
+        cursor: pointer;
+      "
+    >
+      📲 INSTALAR COMO APP
+    </button>
+
     <!-- DENOM TABS -->
     <div class="tabs">
       <div class="tab" id="tab10" onclick="selDenom(10)">Bs. 10</div>
@@ -847,6 +878,40 @@
       }
       function g(id) {
         return document.getElementById(id);
+      }
+
+      /* ── PWA SERVICE WORKER ── */
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("sw.js")
+            .then(() => console.log("SW registrado"))
+            .catch((e) => console.warn("SW error:", e));
+        });
+      }
+
+      /* ── INSTALL BANNER ── */
+      let deferredPrompt = null;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        // Show install button
+        const btn = document.getElementById("btnInstall");
+        if (btn) btn.style.display = "block";
+      });
+
+      window.addEventListener("appinstalled", () => {
+        const btn = document.getElementById("btnInstall");
+        if (btn) btn.style.display = "none";
+        deferredPrompt = null;
+      });
+
+      function installApp() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+        });
       }
     </script>
   </body>

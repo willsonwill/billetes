@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Serie-BOL</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#060b14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Serie-BOL">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:#060b14;color:#fff;font-family:'Rajdhani',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:14px 14px 40px;gap:12px;
+}
+h1{font-family:'Orbitron',sans-serif;font-size:15px;letter-spacing:3px;color:#7aaed0;margin-top:4px}
+.sub{font-size:10px;letter-spacing:2px;color:#1e3a58;text-transform:uppercase;margin-top:-6px}
+
+/* API KEY BOX */
+.apibox{
+  width:100%;max-width:440px;
+  background:#0a1828;border:1px solid #1a3050;border-radius:12px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.apibox label{font-size:10px;letter-spacing:2px;color:#2e6080;text-transform:uppercase}
+.apirow{display:flex;gap:8px}
+.apirow input{
+  flex:1;background:#060d1a;border:1px solid #1a3050;border-radius:8px;
+  padding:9px 12px;color:#fff;font-family:'Share Tech Mono',monospace;
+  font-size:13px;outline:none;transition:border-color .2s;
+}
+.apirow input:focus{border-color:#0066cc}
+.apirow input::placeholder{color:#1a3050}
+.btn-save{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;
+  letter-spacing:1px;text-transform:uppercase;padding:9px 16px;
+  border-radius:8px;border:none;cursor:pointer;white-space:nowrap;
+  background:linear-gradient(135deg,#004bbd,#0068f0);color:#fff;transition:all .2s;
+}
+.btn-save:active{transform:scale(.97)}
+.api-hint{font-size:10px;letter-spacing:1px;color:#1e4060}
+.api-ok{color:#00e676} .api-no{color:#ff4060}
+
+/* DENOM TABS */
+.tabs{width:100%;max-width:440px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tab{
+  padding:12px 6px;border-radius:10px;border:2px solid #152540;
+  background:#0a1828;cursor:pointer;text-align:center;
+  font-family:'Orbitron',sans-serif;font-size:14px;font-weight:900;
+  color:#2a4a68;letter-spacing:1px;transition:all .2s;
+}
+.tab.sel-10{border-color:#ffd600;color:#ffd600;background:rgba(255,214,0,.08);box-shadow:0 0 16px rgba(255,214,0,.15)}
+.tab.sel-20{border-color:#0096ff;color:#0096ff;background:rgba(0,150,255,.08);box-shadow:0 0 16px rgba(0,150,255,.15)}
+.tab.sel-50{border-color:#00c864;color:#00c864;background:rgba(0,200,100,.08);box-shadow:0 0 16px rgba(0,200,100,.15)}
+
+/* CAMERA */
+.cam-wrap{
+  position:relative;width:100%;max-width:440px;
+  border-radius:16px;overflow:hidden;border:2px solid #1a3050;background:#000;aspect-ratio:4/3;
+}
+video{width:100%;height:100%;object-fit:cover;display:block}
+canvas{display:none}
+.roi{
+  position:absolute;left:5%;right:5%;top:28%;bottom:28%;
+  border:3px solid #00e676;border-radius:8px;
+  box-shadow:0 0 0 2000px rgba(0,0,0,.5);pointer-events:none;
+}
+.roi-lbl{
+  position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);
+  font-size:10px;letter-spacing:2px;color:#00e676;white-space:nowrap;
+  text-transform:uppercase;font-family:'Rajdhani',sans-serif;text-shadow:0 0 8px rgba(0,230,118,.7);
+}
+.sline{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#00e676,transparent);
+  box-shadow:0 0 8px #00e676;pointer-events:none;animation:sw 1.5s ease-in-out infinite;
+}
+@keyframes sw{0%{top:4%}100%{top:96%}}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.ph .ico{font-size:42px}
+.ph p{font-size:12px;letter-spacing:1px;text-align:center;color:#2a4a68}
+
+/* STATUS */
+.status{font-size:11px;letter-spacing:2px;color:#2e5070;text-transform:uppercase;text-align:center;min-height:18px}
+.status.loading{color:#ffd600;animation:bl .7s infinite}
+.status.ready{color:#00e676}
+.status.err{color:#ff4060}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* BUTTONS */
+.btn-cam{
+  width:100%;max-width:440px;padding:15px;border-radius:12px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#005530,#00a86b);color:#fff;
+  font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;
+  letter-spacing:2px;box-shadow:0 4px 18px rgba(0,168,107,.4);transition:all .15s;display:none;
+}
+.btn-cam:active{transform:scale(.97)}
+.btn-cap{
+  width:100%;max-width:440px;padding:20px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#003eaa,#0062f0);color:#fff;
+  font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;
+  letter-spacing:3px;box-shadow:0 6px 28px rgba(0,60,180,.5);transition:all .15s;display:none;
+}
+.btn-cap:active{transform:scale(.97)}
+.btn-cap:disabled{background:#0d1828;color:#1a3050;box-shadow:none;cursor:not-allowed}
+
+/* RESULT */
+.result{
+  width:100%;max-width:440px;background:#0a1828;border:2px solid #152540;
+  border-radius:16px;padding:18px 16px 20px;text-align:center;transition:all .4s;
+}
+.result.verdadero{border-color:#00e676;box-shadow:0 0 40px rgba(0,230,118,.2)}
+.result.falso{border-color:#ff3a5a;box-shadow:0 0 40px rgba(255,58,90,.2)}
+.result-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#2e5070;margin-bottom:10px}
+.number{
+  font-family:'Share Tech Mono',monospace;font-size:34px;letter-spacing:5px;
+  color:#1a3050;min-height:52px;display:flex;align-items:center;justify-content:center;
+  word-break:break-all;line-height:1.2;margin-bottom:14px;transition:all .3s;
+}
+.number.show{animation:pop .35s ease}
+.number.verde{color:#00e676;text-shadow:0 0 30px rgba(0,230,118,.9)}
+.number.rojo{color:#ff3a5a;text-shadow:0 0 30px rgba(255,58,90,.7)}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+.verdict{
+  font-family:'Orbitron',sans-serif;font-size:26px;font-weight:900;
+  letter-spacing:4px;padding:14px 20px;border-radius:12px;display:none;animation:fadein .4s ease;
+}
+.verdict.show{display:block}
+.verdict.v{color:#00e676;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2)}
+.verdict.f{color:#ff3a5a;background:rgba(255,58,90,.08);border:1px solid rgba(255,58,90,.2)}
+@keyframes fadein{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.denom-badge{
+  display:inline-block;margin-top:10px;padding:5px 16px;border-radius:20px;
+  font-size:12px;font-weight:700;letter-spacing:2px;font-family:'Rajdhani',sans-serif;
+}
+.denom-10{background:rgba(255,214,0,.15);color:#ffd600;border:1px solid rgba(255,214,0,.3)}
+.denom-20{background:rgba(0,150,255,.15);color:#0096ff;border:1px solid rgba(0,150,255,.3)}
+.denom-50{background:rgba(0,200,100,.15);color:#00c864;border:1px solid rgba(0,200,100,.3)}
+
+/* SPINNER */
+.spinner{width:30px;height:30px;border:3px solid #1a3050;border-top-color:#0062f0;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HISTORY */
+.hist-title{width:100%;max-width:440px;font-size:10px;letter-spacing:3px;color:#1e3a58;text-transform:uppercase}
+.hist-list{width:100%;max-width:440px;display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto}
+.hist-item{
+  background:#0a1828;border:1px solid #152540;border-radius:10px;
+  padding:11px 14px;display:flex;align-items:center;gap:10px;animation:fi .2s ease;
+}
+@keyframes fi{from{opacity:0;transform:translateX(-8px)}to{opacity:1}}
+.hi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hi-dot.v{background:#00e676;box-shadow:0 0 6px #00e676}
+.hi-dot.f{background:#ff3a5a;box-shadow:0 0 6px #ff3a5a}
+.hi-num{font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:2px;flex:1}
+.hi-num.v{color:#90e0b0} .hi-num.f{color:#e09090}
+.hi-res{font-size:10px;font-family:'Orbitron',sans-serif;font-weight:700;letter-spacing:1px}
+.hi-res.v{color:#00e676} .hi-res.f{color:#ff3a5a}
+.hi-t{font-size:10px;color:#1e3a58;letter-spacing:1px}
+.hist-empty{font-size:11px;color:#1a3050;letter-spacing:1px;text-align:center;padding:12px}
+</style>
+</head>
+<body>
+
+<h1>🇧🇴 SERIE-BOL</h1>
+<div class="sub">BCB CP9/2026 · Verificador oficial</div>
+
+<button id="btnInstall" onclick="installApp()" style="display:none;width:100%;max-width:440px;padding:11px;border-radius:10px;border:1px solid #00e676;background:rgba(0,230,118,.08);color:#00e676;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;cursor:pointer;">
+  📲 INSTALAR COMO APP
+</button>
+
+
+
+<!-- DENOM TABS -->
+<div class="tabs">
+  <div class="tab" id="tab10" onclick="selDenom(10)">Bs. 10</div>
+  <div class="tab" id="tab20" onclick="selDenom(20)">Bs. 20</div>
+  <div class="tab" id="tab50" onclick="selDenom(50)">Bs. 50</div>
+</div>
+
+<!-- CAMERA -->
+<div class="cam-wrap">
+  <div class="ph" id="ph">
+    <div class="ico">📷</div>
+    <p>Guarda tu API key, selecciona<br>el valor y abre la cámara</p>
+  </div>
+  <video id="vid" autoplay playsinline muted style="display:none"></video>
+  <canvas id="cap"></canvas>
+  <div class="roi" id="roi" style="display:none">
+    <div class="sline"></div>
+    <div class="roi-lbl">número de serie aquí</div>
+  </div>
+</div>
+
+<div class="status" id="status">Ingresa tu API key para comenzar</div>
+
+<button class="btn-cam" id="btnCam" onclick="startCam()">📷 Abrir Cámara</button>
+<button class="btn-cap" id="btnCap" onclick="capturar()">📸 VERIFICAR BILLETE</button>
+
+<!-- RESULT -->
+<div class="result" id="result">
+  <div class="result-lbl">Número de serie</div>
+  <div class="number" id="numOut">—</div>
+  <div class="verdict" id="verdict"></div>
+  <div id="denomShow"></div>
+</div>
+
+<!-- HISTORY -->
+<div class="hist-title">Historial de verificaciones</div>
+<div class="hist-list" id="histList">
+  <div class="hist-empty">Sin verificaciones aún</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   BASE DE DATOS — BCB CP9/2026 · 28 feb 2026
+   Rangos SIN VALOR LEGAL → FALSO
+═══════════════════════════════════════════ */
+const FALSOS = {
+  50: [
+    [67250001,67700000],[69050001,69500000],[69500001,69950000],
+    [69950001,70400000],[70400001,70850000],[70850001,71300000],
+    [76310012,85139995],[86400001,86850000],[90900001,91350000],
+    [91800001,92250000],
+  ],
+  20: [
+    [87280145,91646549],[96650001,97100000],[99800001,100250000],
+    [100250001,100700000],[109250001,109700000],[110600001,111050000],
+    [111050001,111500000],[111950001,112400000],[112400001,112850000],
+    [112850001,113300000],[114200001,114650000],[114650001,115100000],
+    [115100001,115550000],[118700001,119150000],[119150001,119600000],
+    [120500001,120950000],
+  ],
+  10: [
+    [77100001,77550000],[78000001,78450000],[78900001,96350000],
+    [96350001,96800000],[96800001,97250000],[98150001,98600000],
+    [104900001,105350000],[105350001,105800000],[106700001,107150000],
+    [107600001,108050000],[108050001,108500000],[109400001,109850000],
+  ],
+};
+
+let apiKey = 'K84011547688957', stream = null, denom = 0;
+
+/* ── INIT ── */
+window.onload = () => {
+  g('btnCam').style.display = 'block';
+  setStatus('ready','Selecciona Bs. 10, 20 o 50');
+};
+
+/* ── DENOM ── */
+function selDenom(d) {
+  denom = d;
+  ['tab10','tab20','tab50'].forEach(id => g(id).className = 'tab');
+  g('tab'+d).className = 'tab sel-'+d;
+  if (apiKey && !stream) g('btnCam').style.display = 'block';
+  if (stream) g('btnCap').style.display = 'block';
+  setStatus('ready','Bs.'+d+' seleccionado');
+}
+
+/* ── CAMERA ── */
+async function startCam() {
+  if (!apiKey) { setStatus('err','Primero guarda tu API key'); return; }
+  if (!denom)  { setStatus('err','Selecciona el valor del billete'); return; }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080} }
+    });
+    g('vid').srcObject = stream;
+    g('vid').style.display = 'block';
+    g('ph').style.display  = 'none';
+    g('roi').style.display = 'block';
+    g('btnCam').style.display = 'none';
+    g('btnCap').style.display = 'block';
+    setStatus('ready','Centra el número de serie y toca el botón');
+  } catch(e) {
+    setStatus('err','Error cámara: '+e.message);
+  }
+}
+
+/* ── CAPTURAR ── */
+async function capturar() {
+  if (!apiKey) { setStatus('err','Falta API key'); return; }
+  if (!denom)  { setStatus('err','Selecciona Bs. 10, 20 o 50'); return; }
+  const vid = g('vid');
+  if (!vid.videoWidth) { setStatus('err','Cámara no lista'); return; }
+
+  g('btnCap').disabled = true;
+  setStatus('loading','Leyendo número...');
+  g('result').className = 'result';
+  g('numOut').className = 'number';
+  g('numOut').innerHTML = '<div class="spinner"></div>';
+  g('verdict').className = 'verdict';
+  g('denomShow').innerHTML = '';
+
+  try {
+    const W=vid.videoWidth, H=vid.videoHeight;
+    const sx=Math.round(W*.05), sy=Math.round(H*.28);
+    const sw=Math.round(W*.90), sh=Math.round(H*.44);
+    const c=document.createElement('canvas');
+    c.width=sw; c.height=sh;
+    c.getContext('2d').drawImage(vid,sx,sy,sw,sh,0,0,sw,sh);
+    const b64 = c.toDataURL('image/jpeg',.95).split(',')[1];
+
+    const serial = await ocrSpace(b64);
+
+    if (!serial) {
+      g('numOut').className='number';
+      g('numOut').textContent='¿?';
+      setStatus('err','No se leyó el número — acerca el billete e intenta de nuevo');
+      g('btnCap').disabled=false;
+      return;
+    }
+
+    const esFalso = verificar(serial, denom);
+
+    // Show number
+    g('numOut').textContent = serial;
+    g('numOut').className   = 'number show '+(esFalso?'rojo':'verde');
+
+    // Show verdict
+    const vrd = g('verdict');
+    vrd.textContent = esFalso ? '✗ FALSO' : '✓ VERDADERO';
+    vrd.className   = 'verdict show '+(esFalso?'f':'v');
+    g('result').className = 'result '+(esFalso?'falso':'verdadero');
+
+    g('denomShow').innerHTML = `<div class="denom-badge denom-${denom}">Bs. ${denom}</div>`;
+    setStatus(esFalso?'err':'ready', esFalso?'⚠️ Sin valor legal (BCB CP9/2026)':'✅ Billete válido');
+    addHistory(serial, denom, esFalso);
+
+  } catch(e) {
+    g('numOut').className='number';
+    g('numOut').textContent='Error';
+    setStatus('err', e.message);
+    console.error(e);
+  }
+
+  g('btnCap').disabled=false;
+}
+
+/* ── VERIFICAR ── */
+function verificar(serial, denom) {
+  const num = parseInt(serial.replace(/[A-Z]/g,''), 10);
+  if (isNaN(num)) return false;
+  return (FALSOS[denom]||[]).some(([d,h]) => num>=d && num<=h);
+}
+
+/* ── OCR.SPACE ── */
+async function ocrSpace(base64) {
+  const fd = new FormData();
+  fd.append('base64Image','data:image/jpeg;base64,'+base64);
+  fd.append('apikey', apiKey);
+  fd.append('language','eng');
+  fd.append('isOverlayRequired','false');
+  fd.append('detectOrientation','true');
+  fd.append('scale','true');
+  fd.append('OCREngine','2');
+
+  const res = await fetch('https://api.ocr.space/parse/image',{method:'POST',body:fd});
+  if (!res.ok) throw new Error('OCR error '+res.status);
+  const data = await res.json();
+  if (data.IsErroredOnProcessing) throw new Error(data.ErrorMessage?.[0]||'OCR error');
+  const raw = data.ParsedResults?.[0]?.ParsedText||'';
+  console.log('OCR raw:', raw);
+  return extractSerial(raw);
+}
+
+/* ── EXTRACT SERIAL ── */
+function extractSerial(raw) {
+  if(!raw) return '';
+  const s = raw.toUpperCase().replace(/[^A-Z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+  const tests=[
+    /(\d{8,11})\s*([A-Z])\b/,
+    /\b([A-Z])\s*(\d{8,11})/,
+    /\b[A-Z]{1,2}\d{6,10}\b/,
+    /\b\d{7,11}\b/,
+  ];
+  for(const re of tests){
+    const m=s.match(re);
+    if(!m) continue;
+    if(m[2]!==undefined){
+      const a=m[1],b=m[2];
+      if(/^[A-Z]$/.test(b)) return a+b;
+      if(/^[A-Z]$/.test(a)) return a+b;
+    }
+    return m[0].replace(/\s/g,'');
+  }
+  return '';
+}
+
+/* ── HISTORY ── */
+function addHistory(serial,denom,esFalso){
+  const list=g('histList');
+  if(list.querySelector('.hist-empty')) list.innerHTML='';
+  const d=document.createElement('div');
+  d.className='hist-item';
+  d.innerHTML=`
+    <div class="hi-dot ${esFalso?'f':'v'}"></div>
+    <div class="hi-num ${esFalso?'f':'v'}">${serial}</div>
+    <span class="denom-badge denom-${denom}" style="font-size:10px;padding:3px 8px">Bs.${denom}</span>
+    <div class="hi-res ${esFalso?'f':'v'}">${esFalso?'FALSO':'REAL'}</div>
+    <div class="hi-t">${new Date().toLocaleTimeString('es-BO')}</div>
+  `;
+  list.prepend(d);
+}
+
+function setStatus(cls,txt){
+  const s=g('status');
+  s.className='status'+(cls?' '+cls:'');
+  s.textContent=txt;
+}
+function g(id){return document.getElementById(id)}
+
+/* ── PWA SERVICE WORKER ── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('SW registrado'))
+      .catch(e => console.warn('SW error:', e));
+  });
+}
+
+/* ── INSTALL BANNER ── */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install button
+  const btn = document.getElementById('btnInstall');
+  if (btn) btn.style.display = 'block';
+});
+
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('btnInstall');
+  if (btn) btn.style.display = 'none';
+  deferredPrompt = null;
+});
+
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+}
+</script>
+</body>
+</html>
