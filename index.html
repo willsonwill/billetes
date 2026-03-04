@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <title>Serie-BOL will</title>
+    <title>Serie-BOL</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap");
       * {
@@ -41,7 +41,77 @@
         margin-top: -6px;
       }
 
-      /* DENOMINATION TABS */
+      /* API KEY BOX */
+      .apibox {
+        width: 100%;
+        max-width: 440px;
+        background: #0a1828;
+        border: 1px solid #1a3050;
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .apibox label {
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: #2e6080;
+        text-transform: uppercase;
+      }
+      .apirow {
+        display: flex;
+        gap: 8px;
+      }
+      .apirow input {
+        flex: 1;
+        background: #060d1a;
+        border: 1px solid #1a3050;
+        border-radius: 8px;
+        padding: 9px 12px;
+        color: #fff;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .apirow input:focus {
+        border-color: #0066cc;
+      }
+      .apirow input::placeholder {
+        color: #1a3050;
+      }
+      .btn-save {
+        font-family: "Rajdhani", sans-serif;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 9px 16px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        background: linear-gradient(135deg, #004bbd, #0068f0);
+        color: #fff;
+        transition: all 0.2s;
+      }
+      .btn-save:active {
+        transform: scale(0.97);
+      }
+      .api-hint {
+        font-size: 10px;
+        letter-spacing: 1px;
+        color: #1e4060;
+      }
+      .api-ok {
+        color: #00e676;
+      }
+      .api-no {
+        color: #ff4060;
+      }
+
+      /* DENOM TABS */
       .tabs {
         width: 100%;
         max-width: 440px;
@@ -208,6 +278,7 @@
         letter-spacing: 2px;
         box-shadow: 0 4px 18px rgba(0, 168, 107, 0.4);
         transition: all 0.15s;
+        display: none;
       }
       .btn-cam:active {
         transform: scale(0.97);
@@ -258,7 +329,6 @@
         border-color: #ff3a5a;
         box-shadow: 0 0 40px rgba(255, 58, 90, 0.2);
       }
-
       .result-lbl {
         font-size: 10px;
         letter-spacing: 3px;
@@ -266,7 +336,6 @@
         color: #2e5070;
         margin-bottom: 10px;
       }
-
       .number {
         font-family: "Share Tech Mono", monospace;
         font-size: 34px;
@@ -277,9 +346,9 @@
         align-items: center;
         justify-content: center;
         word-break: break-all;
-        transition: all 0.3s;
         line-height: 1.2;
         margin-bottom: 14px;
+        transition: all 0.3s;
       }
       .number.show {
         animation: pop 0.35s ease;
@@ -303,7 +372,6 @@
           transform: scale(1);
         }
       }
-
       .verdict {
         font-family: "Orbitron", sans-serif;
         font-size: 26px;
@@ -337,7 +405,6 @@
           transform: scale(1);
         }
       }
-
       .denom-badge {
         display: inline-block;
         margin-top: 10px;
@@ -470,10 +537,28 @@
     </style>
   </head>
   <body>
-    <h1>🇧🇴 SERIE-BOL will</h1>
-    <div class="sub">Verificador · BCB CP9/2026</div>
+    <h1>🇧🇴 SERIE-BOL</h1>
+    <div class="sub">BCB CP9/2026 · Verificador oficial</div>
 
-    <!-- DENOMINATION SELECTOR -->
+    <!-- API KEY -->
+    <div class="apibox">
+      <label>🔑 Tu API Key de OCR.Space (gratis)</label>
+      <div class="apirow">
+        <input
+          type="password"
+          id="apiInput"
+          placeholder="K84011547688957"
+          autocomplete="off"
+        />
+        <button class="btn-save" onclick="saveKey()">Guardar</button>
+      </div>
+      <span class="api-hint" id="apiHint">
+        Obtén tu key GRATIS en: <b>ocr.space/ocrapi/freekey</b> — solo necesitas
+        tu email
+      </span>
+    </div>
+
+    <!-- DENOM TABS -->
     <div class="tabs">
       <div class="tab" id="tab10" onclick="selDenom(10)">Bs. 10</div>
       <div class="tab" id="tab20" onclick="selDenom(20)">Bs. 20</div>
@@ -484,7 +569,7 @@
     <div class="cam-wrap">
       <div class="ph" id="ph">
         <div class="ico">📷</div>
-        <p>Selecciona el valor del billete<br />luego abre la cámara</p>
+        <p>Guarda tu API key, selecciona<br />el valor y abre la cámara</p>
       </div>
       <video id="vid" autoplay playsinline muted style="display: none"></video>
       <canvas id="cap"></canvas>
@@ -494,14 +579,9 @@
       </div>
     </div>
 
-    <div class="status" id="status">Selecciona Bs. 10, 20 o 50</div>
+    <div class="status" id="status">Ingresa tu API key para comenzar</div>
 
-    <button
-      class="btn-cam"
-      id="btnCam"
-      onclick="startCam()"
-      style="display: none"
-    >
+    <button class="btn-cam" id="btnCam" onclick="startCam()">
       📷 Abrir Cámara
     </button>
     <button class="btn-cap" id="btnCap" onclick="capturar()">
@@ -523,11 +603,10 @@
     </div>
 
     <script>
-      /* ═══════════════════════════════════════════════
+      /* ═══════════════════════════════════════════
    BASE DE DATOS — BCB CP9/2026 · 28 feb 2026
-   Rangos SIN VALOR LEGAL (FALSOS)
-   Si el número cae en estos rangos → FALSO
-═══════════════════════════════════════════════ */
+   Rangos SIN VALOR LEGAL → FALSO
+═══════════════════════════════════════════ */
       const FALSOS = {
         50: [
           [67250001, 67700000],
@@ -575,24 +654,59 @@
         ],
       };
 
-      const OCR_KEY = "helloworld";
-      let stream = null,
+      let apiKey = "",
+        stream = null,
         denom = 0;
 
-      /* ── DENOM SELECT ── */
+      /* ── INIT ── */
+      window.onload = () => {
+        const k = localStorage.getItem("ocrspace_key");
+        if (k) {
+          apiKey = k;
+          g("apiInput").value = "••••••••••••••••";
+          g("apiHint").textContent = "✅ API Key guardada — lista para usar";
+          g("apiHint").className = "api-hint api-ok";
+          g("btnCam").style.display = "block";
+          setStatus("ready", "Selecciona Bs. 10, 20 o 50");
+        }
+      };
+
+      /* ── SAVE KEY ── */
+      function saveKey() {
+        const k = g("apiInput").value.trim();
+        if (!k || k.includes("•")) {
+          if (apiKey) return; // already saved
+          g("apiHint").textContent = "⚠️ Pega tu API key primero";
+          g("apiHint").className = "api-hint api-no";
+          return;
+        }
+        apiKey = k;
+        localStorage.setItem("ocrspace_key", k);
+        g("apiInput").value = "••••••••••••••••";
+        g("apiHint").textContent = "✅ API Key guardada correctamente";
+        g("apiHint").className = "api-hint api-ok";
+        g("btnCam").style.display = "block";
+        setStatus("ready", "Selecciona Bs. 10, 20 o 50");
+      }
+
+      /* ── DENOM ── */
       function selDenom(d) {
         denom = d;
         ["tab10", "tab20", "tab50"].forEach((id) => (g(id).className = "tab"));
         g("tab" + d).className = "tab sel-" + d;
-        g("btnCam").style.display = "block";
-        g("btnCap").style.display = stream ? "block" : "none";
-        setStatus("ready", "Bs. " + d + " seleccionado — abre la cámara");
+        if (apiKey && !stream) g("btnCam").style.display = "block";
+        if (stream) g("btnCap").style.display = "block";
+        setStatus("ready", "Bs." + d + " seleccionado");
       }
 
       /* ── CAMERA ── */
       async function startCam() {
+        if (!apiKey) {
+          setStatus("err", "Primero guarda tu API key");
+          return;
+        }
         if (!denom) {
-          setStatus("err", "Selecciona el valor primero");
+          setStatus("err", "Selecciona el valor del billete");
           return;
         }
         try {
@@ -617,8 +731,12 @@
 
       /* ── CAPTURAR ── */
       async function capturar() {
+        if (!apiKey) {
+          setStatus("err", "Falta API key");
+          return;
+        }
         if (!denom) {
-          setStatus("err", "Selecciona Bs. 10, 20 o 50 primero");
+          setStatus("err", "Selecciona Bs. 10, 20 o 50");
           return;
         }
         const vid = g("vid");
@@ -646,48 +764,42 @@
           c.width = sw;
           c.height = sh;
           c.getContext("2d").drawImage(vid, sx, sy, sw, sh, 0, 0, sw, sh);
-          const base64 = c.toDataURL("image/jpeg", 0.95).split(",")[1];
+          const b64 = c.toDataURL("image/jpeg", 0.95).split(",")[1];
 
-          const serial = await ocrSpace(base64);
+          const serial = await ocrSpace(b64);
 
           if (!serial) {
             g("numOut").className = "number";
             g("numOut").textContent = "¿?";
-            setStatus("err", "No se leyó — acerca el billete y reintenta");
+            setStatus(
+              "err",
+              "No se leyó el número — acerca el billete e intenta de nuevo",
+            );
             g("btnCap").disabled = false;
             return;
           }
 
-          // Verify
           const esFalso = verificar(serial, denom);
 
           // Show number
-          const out = g("numOut");
-          out.textContent = serial;
-          out.className = "number show " + (esFalso ? "rojo" : "verde");
+          g("numOut").textContent = serial;
+          g("numOut").className = "number show " + (esFalso ? "rojo" : "verde");
 
           // Show verdict
           const vrd = g("verdict");
-          if (esFalso) {
-            vrd.textContent = "✗ FALSO";
-            vrd.className = "verdict show f";
-            g("result").className = "result falso";
-          } else {
-            vrd.textContent = "✓ VERDADERO";
-            vrd.className = "verdict show v";
-            g("result").className = "result verdadero";
-          }
+          vrd.textContent = esFalso ? "✗ FALSO" : "✓ VERDADERO";
+          vrd.className = "verdict show " + (esFalso ? "f" : "v");
+          g("result").className = "result " + (esFalso ? "falso" : "verdadero");
 
-          // Denom badge
           g("denomShow").innerHTML =
             `<div class="denom-badge denom-${denom}">Bs. ${denom}</div>`;
-
           setStatus(
             esFalso ? "err" : "ready",
-            esFalso ? "⚠️ Billete sin valor legal" : "✅ Billete válido",
+            esFalso ? "⚠️ Sin valor legal (BCB CP9/2026)" : "✅ Billete válido",
           );
           addHistory(serial, denom, esFalso);
         } catch (e) {
+          g("numOut").className = "number";
           g("numOut").textContent = "Error";
           setStatus("err", e.message);
           console.error(e);
@@ -698,23 +810,16 @@
 
       /* ── VERIFICAR ── */
       function verificar(serial, denom) {
-        // Extract pure digits from serial (remove trailing letter if present)
-        const digits = serial.replace(/[A-Z]/g, "").trim();
-        const num = parseInt(digits, 10);
+        const num = parseInt(serial.replace(/[A-Z]/g, ""), 10);
         if (isNaN(num)) return false;
-
-        const rangos = FALSOS[denom] || [];
-        for (const [desde, hasta] of rangos) {
-          if (num >= desde && num <= hasta) return true; // FALSO
-        }
-        return false; // VERDADERO
+        return (FALSOS[denom] || []).some(([d, h]) => num >= d && num <= h);
       }
 
       /* ── OCR.SPACE ── */
       async function ocrSpace(base64) {
         const fd = new FormData();
         fd.append("base64Image", "data:image/jpeg;base64," + base64);
-        fd.append("apikey", OCR_KEY);
+        fd.append("apikey", apiKey);
         fd.append("language", "eng");
         fd.append("isOverlayRequired", "false");
         fd.append("detectOrientation", "true");
@@ -729,9 +834,8 @@
         const data = await res.json();
         if (data.IsErroredOnProcessing)
           throw new Error(data.ErrorMessage?.[0] || "OCR error");
-
         const raw = data.ParsedResults?.[0]?.ParsedText || "";
-        console.log("OCR:", raw);
+        console.log("OCR raw:", raw);
         return extractSerial(raw);
       }
 
