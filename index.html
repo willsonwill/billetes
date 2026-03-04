@@ -6,28 +6,29 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <title>Serie-BOL1</title>
-    <!-- Tesseract v2 — más estable, sin el bug SetVariable -->
+    <title>Serie-BOL OK</title>
     <script src="https://unpkg.com/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap");
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
       }
       html,
       body {
         background: #060b14;
         color: #ddeeff;
         font-family: "Rajdhani", sans-serif;
+        min-height: 100vh;
       }
 
       header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 11px 16px;
+        padding: 12px 16px;
         background: #080e1c;
         border-bottom: 1px solid #152540;
         position: sticky;
@@ -48,7 +49,6 @@
         align-items: center;
         justify-content: center;
         font-size: 17px;
-        box-shadow: 0 0 14px rgba(0, 168, 107, 0.35);
       }
       .brand h1 {
         font-family: "Orbitron", sans-serif;
@@ -77,7 +77,7 @@
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: #222;
+        background: #333;
         transition: all 0.3s;
       }
       .dot.g {
@@ -105,7 +105,7 @@
       }
 
       .page {
-        max-width: 500px;
+        max-width: 480px;
         margin: 0 auto;
         padding: 14px;
         display: flex;
@@ -113,7 +113,7 @@
         gap: 12px;
       }
 
-      /* CAMERA */
+      /* ── VIDEO ── */
       .vcard {
         background: #0a1220;
         border: 1px solid #152540;
@@ -133,7 +133,201 @@
         text-transform: uppercase;
         color: #4a7090;
       }
-      .btn {
+
+      .vwrap {
+        position: relative;
+        background: #000;
+        aspect-ratio: 4/3;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      canvas#cap {
+        display: none;
+      }
+
+      /* guide overlay */
+      .guide-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      /* dark mask leaving center strip clear */
+      .mask-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 35%;
+        background: rgba(0, 0, 0, 0.55);
+      }
+      .mask-bot {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 35%;
+        background: rgba(0, 0, 0, 0.55);
+      }
+      .mask-L {
+        position: absolute;
+        top: 35%;
+        bottom: 35%;
+        left: 0;
+        width: 5%;
+        background: rgba(0, 0, 0, 0.55);
+      }
+      .mask-R {
+        position: absolute;
+        top: 35%;
+        bottom: 35%;
+        right: 0;
+        width: 5%;
+        background: rgba(0, 0, 0, 0.55);
+      }
+      /* bright border around ROI */
+      .roi-border {
+        position: absolute;
+        left: 5%;
+        right: 5%;
+        top: 35%;
+        bottom: 35%;
+        border: 2px solid #00e676;
+        border-radius: 6px;
+        box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.2);
+      }
+      .roi-lbl {
+        position: absolute;
+        bottom: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: #00e676;
+        white-space: nowrap;
+        font-family: "Rajdhani", sans-serif;
+        text-transform: uppercase;
+        text-shadow: 0 0 8px #00e676;
+      }
+      /* scan animation */
+      .sline {
+        position: absolute;
+        left: 5%;
+        right: 5%;
+        height: 2px;
+        top: 35%;
+        background: linear-gradient(90deg, transparent, #00e676, transparent);
+        box-shadow: 0 0 8px #00e676;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .sline.on {
+        opacity: 1;
+        animation: sw 1.6s ease-in-out infinite;
+      }
+      @keyframes sw {
+        0% {
+          top: 35%;
+        }
+        100% {
+          top: 65%;
+        }
+      }
+
+      .placeholder {
+        text-align: center;
+        padding: 40px 20px;
+      }
+      .placeholder .ico {
+        font-size: 40px;
+        margin-bottom: 10px;
+      }
+      .placeholder p {
+        font-size: 13px;
+        color: #2a4a68;
+        margin-bottom: 14px;
+        letter-spacing: 1px;
+      }
+
+      /* ── CAPTURE BUTTON ── */
+      .capture-area {
+        padding: 14px 15px;
+        border-top: 1px solid #152540;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn-capture {
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(135deg, #0048bb, #006ef5);
+        color: #fff;
+        font-family: "Orbitron", sans-serif;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        box-shadow: 0 4px 20px rgba(0, 72, 187, 0.5);
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .btn-capture:active {
+        transform: scale(0.97);
+        box-shadow: 0 2px 10px rgba(0, 72, 187, 0.4);
+      }
+      .btn-capture:disabled {
+        background: #1a2a3a;
+        color: #2a4a68;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+
+      .hint {
+        font-size: 11px;
+        color: #2e5070;
+        letter-spacing: 1px;
+        text-align: center;
+      }
+
+      /* progress */
+      .prog-wrap {
+        width: 100%;
+      }
+      .prog-label {
+        font-size: 11px;
+        color: #2e5070;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-align: center;
+      }
+      .prog-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .prog-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #004bbd, #00e676);
+        border-radius: 2px;
+        width: 0;
+        transition: width 0.2s;
+      }
+
+      .btn-start {
         font-family: "Rajdhani", sans-serif;
         font-weight: 700;
         letter-spacing: 1px;
@@ -143,193 +337,78 @@
         border-radius: 8px;
         border: none;
         cursor: pointer;
-        transition: all 0.2s;
-      }
-      .btn-on {
         background: linear-gradient(135deg, #0048bb, #006ef5);
         color: #fff;
-        box-shadow: 0 3px 12px rgba(0, 70, 187, 0.4);
       }
-      .btn-off {
+      .btn-stop {
+        font-family: "Rajdhani", sans-serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 12px;
+        padding: 7px 18px;
+        border-radius: 8px;
         background: rgba(255, 30, 60, 0.1);
         color: #ff3a5a;
         border: 1px solid rgba(255, 30, 60, 0.25);
+        cursor: pointer;
       }
 
-      .vwrap {
-        position: relative;
-        background: #000;
-        min-height: 240px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      video {
-        width: 100%;
-        max-height: 300px;
-        object-fit: cover;
-        display: block;
-      }
-      canvas#cap {
-        display: none;
-      }
-
-      .sline {
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2px;
-        pointer-events: none;
-        z-index: 4;
-        background: linear-gradient(90deg, transparent, #00e676, transparent);
-        box-shadow: 0 0 8px #00e676;
-        opacity: 0;
-      }
-      .sline.on {
-        opacity: 1;
-        animation: sw 1.8s linear infinite;
-      }
-      @keyframes sw {
-        0% {
-          top: 5%;
-        }
-        100% {
-          top: 95%;
-        }
-      }
-
-      .roi {
-        position: absolute;
-        left: 5%;
-        right: 5%;
-        top: 25%;
-        height: 50%;
-        border: 2px solid rgba(0, 230, 118, 0.5);
-        border-radius: 6px;
-        pointer-events: none;
-        display: none;
-      }
-      .roi.on {
-        display: block;
-      }
-      .roi-lbl {
-        position: absolute;
-        bottom: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 9px;
-        letter-spacing: 2px;
-        color: rgba(0, 230, 118, 0.6);
-        white-space: nowrap;
-        font-family: "Rajdhani", sans-serif;
-        text-transform: uppercase;
-      }
-
-      .placeholder {
-        text-align: center;
-        padding: 45px 20px;
-        color: #1e3a58;
-      }
-      .placeholder .ico {
-        font-size: 44px;
-        margin-bottom: 10px;
-      }
-      .placeholder p {
-        font-size: 13px;
-        letter-spacing: 1px;
-        margin-bottom: 16px;
-        color: #2a4a68;
-      }
-      .vfoot {
-        padding: 8px 15px;
-        border-top: 1px solid #152540;
-        font-size: 10px;
-        color: #2e5070;
-        letter-spacing: 1px;
-        text-align: center;
-      }
-
-      /* PROGRESS */
-      .progress-wrap {
-        padding: 8px 15px;
-        border-top: 1px solid #152540;
-        display: none;
-      }
-      .progress-label {
-        font-size: 10px;
-        letter-spacing: 1px;
-        color: #2e5070;
-        margin-bottom: 4px;
-        text-transform: uppercase;
-      }
-      .progress-bar {
-        height: 3px;
-        background: rgba(255, 255, 255, 0.06);
-        border-radius: 2px;
-        overflow: hidden;
-      }
-      .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #004bbd, #00e676);
-        border-radius: 2px;
-        width: 0%;
-        transition: width 0.3s;
-      }
-
-      /* SERIAL */
-      .scard {
+      /* ── RESULT ── */
+      .rcard {
         background: #0a1220;
         border: 1px solid #152540;
         border-radius: 14px;
         overflow: hidden;
         transition: all 0.4s;
       }
-      .scard.found {
-        border-color: rgba(0, 230, 118, 0.45);
-        box-shadow: 0 0 20px rgba(0, 230, 118, 0.09);
+      .rcard.found {
+        border-color: rgba(0, 230, 118, 0.5);
+        box-shadow: 0 0 24px rgba(0, 230, 118, 0.12);
       }
-      .scard-head {
+      .rcard-head {
         padding: 11px 15px;
         border-bottom: 1px solid #152540;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
-      .scard-head span {
+      .rcard-head span {
         font-size: 11px;
         letter-spacing: 2px;
         text-transform: uppercase;
         color: #4a7090;
       }
-      .scard-head small {
+      .rcard-head small {
         font-family: "Share Tech Mono", monospace;
         font-size: 11px;
         color: #2e5070;
       }
-      .serial {
-        padding: 20px 15px;
+
+      .serial-out {
+        padding: 22px 15px;
         text-align: center;
         font-family: "Share Tech Mono", monospace;
-        font-size: 30px;
-        letter-spacing: 5px;
-        min-height: 76px;
+        font-size: 32px;
+        letter-spacing: 6px;
+        min-height: 80px;
         display: flex;
         align-items: center;
         justify-content: center;
         word-break: break-all;
         transition: all 0.3s;
       }
-      .serial.lit {
+      .serial-out.lit {
         color: #00e676;
-        text-shadow: 0 0 22px rgba(0, 230, 118, 0.75);
-        animation: pop 0.3s ease;
+        text-shadow: 0 0 24px rgba(0, 230, 118, 0.8);
+        animation: pop 0.35s ease;
       }
       @keyframes pop {
         0% {
-          transform: scale(0.88);
+          transform: scale(0.85);
         }
         60% {
-          transform: scale(1.06);
+          transform: scale(1.07);
         }
         100% {
           transform: scale(1);
@@ -341,34 +420,9 @@
         letter-spacing: 2px;
         font-family: "Rajdhani", sans-serif;
       }
-      .conf-row {
-        padding: 0 15px 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .conf-txt {
-        font-size: 11px;
-        color: #2e5070;
-        letter-spacing: 1px;
-        white-space: nowrap;
-      }
-      .bar {
-        flex: 1;
-        height: 3px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 2px;
-        overflow: hidden;
-      }
-      .fill {
-        height: 100%;
-        background: linear-gradient(90deg, #004bbd, #00e676);
-        border-radius: 2px;
-        width: 0;
-        transition: width 0.5s;
-      }
-      .smeta {
-        padding: 9px 15px 13px;
+
+      .rmeta {
+        padding: 10px 15px 14px;
         display: flex;
         justify-content: space-between;
         font-size: 11px;
@@ -377,7 +431,50 @@
         border-top: 1px solid #0f1e30;
       }
 
-      /* DEBUG */
+      /* ── SNAPSHOT PREVIEW ── */
+      .snap-card {
+        background: #0a1220;
+        border: 1px solid #152540;
+        border-radius: 14px;
+        overflow: hidden;
+        display: none;
+      }
+      .snap-head {
+        padding: 10px 15px;
+        border-bottom: 1px solid #152540;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .snap-head span {
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #4a7090;
+      }
+      .snap-body {
+        padding: 10px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .snap-body canvas {
+        border-radius: 6px;
+        border: 1px solid #152540;
+        max-width: 100%;
+        height: auto;
+      }
+      .snap-label {
+        font-size: 9px;
+        color: #2e5070;
+        letter-spacing: 1px;
+        text-align: center;
+        margin-top: 4px;
+        text-transform: uppercase;
+      }
+
+      /* ── DEBUG ── */
       .dbg {
         background: #0a1220;
         border: 1px solid #152540;
@@ -386,11 +483,10 @@
       }
       .dbg-head {
         padding: 10px 15px;
-        border-bottom: 1px solid #152540;
         display: flex;
-        align-items: center;
         justify-content: space-between;
         cursor: pointer;
+        border-bottom: 1px solid #152540;
       }
       .dbg-head span {
         font-size: 11px;
@@ -399,58 +495,22 @@
         color: #2e5070;
       }
       .dbg-body {
-        padding: 10px 15px;
+        padding: 12px 15px;
         font-family: "Share Tech Mono", monospace;
-        font-size: 11px;
-        color: #3a6080;
+        font-size: 12px;
+        color: #3a7060;
         line-height: 1.8;
         display: none;
         white-space: pre-wrap;
         word-break: break-all;
+        max-height: 200px;
+        overflow-y: auto;
       }
       .dbg-body.on {
         display: block;
       }
 
-      /* CANVAS PREVIEW */
-      .prev {
-        background: #0a1220;
-        border: 1px solid #152540;
-        border-radius: 14px;
-        overflow: hidden;
-      }
-      .prev-head {
-        padding: 10px 15px;
-        border-bottom: 1px solid #152540;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .prev-head span {
-        font-size: 11px;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        color: #2e5070;
-      }
-      .prev-body {
-        padding: 10px;
-        display: none;
-      }
-      .prev-body.on {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        align-items: flex-start;
-      }
-      .prev-body canvas {
-        border-radius: 4px;
-        border: 1px solid #152540;
-        max-width: 100%;
-        height: auto;
-      }
-
-      /* HISTORY */
+      /* ── HISTORY ── */
       .hcard {
         background: #0a1220;
         border: 1px solid #152540;
@@ -540,8 +600,9 @@
         opacity: 0;
         transition: all 0.3s;
         pointer-events: none;
-        white-space: nowrap;
         z-index: 999;
+        max-width: 90%;
+        text-align: center;
       }
       .toast.show {
         opacity: 1;
@@ -554,7 +615,7 @@
       <div class="brand">
         <div class="brand-icon">🇧🇴</div>
         <div>
-          <h1>SERIE-BOL</h1>
+          <h1>SERIE-BOL OK</h1>
           <small>Lector de billetes</small>
         </div>
       </div>
@@ -570,11 +631,11 @@
         <div class="vcard-head">
           <span>📷 Cámara</span>
           <div>
-            <button class="btn btn-on" id="bStart" onclick="startCam()">
+            <button class="btn-start" id="bStart" onclick="startCam()">
               Iniciar
             </button>
             <button
-              class="btn btn-off"
+              class="btn-stop"
               id="bStop"
               onclick="stopCam()"
               style="display: none"
@@ -583,11 +644,11 @@
             </button>
           </div>
         </div>
-        <div class="vwrap">
+        <div class="vwrap" id="vwrap">
           <div class="placeholder" id="ph">
             <div class="ico">📷</div>
-            <p>Apunta la cámara al número<br />de serie del billete</p>
-            <button class="btn btn-on" onclick="startCam()">
+            <p>Toca "Iniciar" y apunta al<br />número de serie del billete</p>
+            <button class="btn-start" onclick="startCam()">
               Iniciar cámara
             </button>
           </div>
@@ -599,60 +660,62 @@
             style="display: none"
           ></video>
           <canvas id="cap"></canvas>
-          <div class="sline" id="sline"></div>
-          <div class="roi" id="roi">
-            <div class="roi-lbl">coloca el número de serie aquí</div>
+          <!-- guide overlay -->
+          <div class="guide-overlay" id="guide" style="display: none">
+            <div class="mask-top"></div>
+            <div class="mask-bot"></div>
+            <div class="mask-L"></div>
+            <div class="mask-R"></div>
+            <div class="roi-border">
+              <div class="roi-lbl">número de serie aquí</div>
+            </div>
+            <div class="sline on" id="sline"></div>
           </div>
         </div>
-        <div class="progress-wrap" id="progWrap">
-          <div class="progress-label" id="progLabel">Cargando OCR...</div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="progFill"></div>
+        <!-- CAPTURE BUTTON -->
+        <div class="capture-area" id="captureArea" style="display: none">
+          <button class="btn-capture" id="btnCap" onclick="capture()">
+            <span>📸</span> CAPTURAR Y LEER
+          </button>
+          <div class="hint">Centra el número de serie en el recuadro verde</div>
+          <div class="prog-wrap" id="progWrap" style="display: none">
+            <div class="prog-label" id="progLabel">Procesando...</div>
+            <div class="prog-bar">
+              <div class="prog-fill" id="progFill"></div>
+            </div>
           </div>
-        </div>
-        <div class="vfoot" id="vfoot" style="display: none">
-          💡 Buena luz · Billete plano · Serie dentro del recuadro
         </div>
       </div>
 
-      <!-- SERIAL RESULT -->
-      <div class="scard" id="scard">
-        <div class="scard-head">
+      <!-- RESULT -->
+      <div class="rcard" id="rcard">
+        <div class="rcard-head">
           <span>Número de serie</span>
-          <small id="sbadge">—</small>
+          <small id="rbadge">—</small>
         </div>
-        <div class="serial" id="serial">
-          <span class="serial-ph">— esperando —</span>
+        <div class="serial-out" id="serialOut">
+          <span class="serial-ph">— toca CAPTURAR —</span>
         </div>
-        <div class="conf-row">
-          <span class="conf-txt">Confianza</span>
-          <div class="bar"><div class="fill" id="cfill"></div></div>
-          <span class="conf-txt" id="cpct">0%</span>
-        </div>
-        <div class="smeta">
-          <span id="smL">Sin detección</span>
-          <span id="smR">—</span>
+        <div class="rmeta">
+          <span id="rmL">Sin lectura aún</span>
+          <span id="rmR">—</span>
         </div>
       </div>
 
-      <!-- CANVAS PREVIEW -->
-      <div class="prev">
-        <div class="prev-head" onclick="togglePrev()">
-          <span>🖼 Vista procesada (lo que lee el OCR)</span>
-          <span style="font-size: 10px; color: #2e5070" id="pvArrow"
-            >▶ ver</span
-          >
+      <!-- SNAPSHOT PREVIEWS -->
+      <div class="snap-card" id="snapCard">
+        <div class="snap-head">
+          <span>🖼 Imágenes analizadas</span>
+          <small id="snapInfo">—</small>
         </div>
-        <div class="prev-body" id="pvBody"></div>
+        <div class="snap-body" id="snapBody"></div>
       </div>
 
-      <!-- DEBUG TEXT -->
+      <!-- DEBUG -->
       <div class="dbg">
         <div class="dbg-head" onclick="toggleDbg()">
           <span>🔬 Texto crudo OCR</span>
-          <span style="font-size: 10px; color: #2e5070" id="dbgArrow"
-            >▶ ver</span
-          >
+          <span style="font-size: 10px; color: #2e5070" id="dbgArr">▶ ver</span>
         </div>
         <div class="dbg-body" id="dbgBody"></div>
       </div>
@@ -664,315 +727,351 @@
           <small id="hcnt">0</small>
         </div>
         <div class="hlist" id="hlist">
-          <div class="hempty">Sin lecturas aún</div>
+          <div class="hempty">Sin capturas aún</div>
         </div>
       </div>
     </div>
-
     <div class="toast" id="toast"></div>
 
     <script>
-      /* ── STATE ── */
       let stream = null,
-        scheduler = null,
-        worker1 = null;
-      let scanning = false,
-        loopTimer = null;
-      let lastSerial = "",
-        lastTime = 0,
-        history = [];
-      let pvOpen = false,
+        worker = null,
+        ocrReady = false;
+      let history = [],
         dbgOpen = false;
-      let rawLogs = [];
 
-      /* ── CAMERA ── */
+      /* ── START CAMERA ── */
       async function startCam() {
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: { ideal: "environment" },
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
             },
           });
           const v = g("vid");
           v.srcObject = stream;
           v.style.display = "block";
           g("ph").style.display = "none";
+          g("guide").style.display = "block";
+          g("captureArea").style.display = "flex";
           g("bStart").style.display = "none";
           g("bStop").style.display = "";
-          g("sline").classList.add("on");
-          g("roi").classList.add("on");
-          g("vfoot").style.display = "block";
-          g("progWrap").style.display = "block";
           setStatus("y", "CARGANDO OCR...");
-          await initOCR();
+          await loadOCR();
         } catch (e) {
           toast("❌ Error cámara: " + e.message);
-          console.error(e);
         }
       }
 
       function stopCam() {
-        scanning = false;
-        clearTimeout(loopTimer);
-        if (stream) {
-          stream.getTracks().forEach((t) => t.stop());
-          stream = null;
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+        if (worker) {
+          worker.terminate();
+          worker = null;
+          ocrReady = false;
         }
-        if (worker1) {
-          worker1.terminate();
-          worker1 = null;
-        }
-        const v = g("vid");
-        v.style.display = "none";
-        v.srcObject = null;
+        g("vid").style.display = "none";
+        g("vid").srcObject = null;
         g("ph").style.display = "block";
+        g("guide").style.display = "none";
+        g("captureArea").style.display = "none";
         g("bStart").style.display = "";
         g("bStop").style.display = "none";
-        g("sline").classList.remove("on");
-        g("roi").classList.remove("on");
-        g("vfoot").style.display = "none";
-        g("progWrap").style.display = "none";
         setStatus("", "INACTIVO");
       }
 
-      /* ── OCR INIT (Tesseract v2) ── */
-      async function initOCR() {
+      /* ── LOAD OCR ── */
+      async function loadOCR() {
         try {
-          // Tesseract v2 API
-          worker1 = Tesseract.createWorker({
+          worker = Tesseract.createWorker({
             logger: (m) => {
-              if (m.status === "loading tesseract core") {
-                setProgress(10, "Cargando Tesseract...");
-              } else if (m.status === "initializing tesseract") {
-                setProgress(30, "Iniciando...");
-              } else if (m.status === "loading language traineddata") {
-                setProgress(50, "Cargando idioma...");
-              } else if (m.status === "initializing api") {
-                setProgress(80, "Configurando OCR...");
-              } else if (m.status === "recognizing text") {
-                setProgress(
-                  Math.round((m.progress || 0) * 100),
-                  "Reconociendo...",
-                );
-              }
+              if (m.status === "loading tesseract core")
+                setProg(15, "Cargando Tesseract...");
+              else if (m.status === "initializing tesseract")
+                setProg(35, "Iniciando motor...");
+              else if (m.status === "loading language traineddata")
+                setProg(60, "Cargando idioma...");
+              else if (m.status === "initializing api")
+                setProg(85, "Configurando...");
             },
           });
-
-          await worker1.load();
-          await worker1.loadLanguage("eng");
-          await worker1.initialize("eng");
-          await worker1.setParameters({
+          await worker.load();
+          await worker.loadLanguage("eng");
+          await worker.initialize("eng");
+          await worker.setParameters({
             tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
+            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
           });
-
-          setProgress(100, "OCR listo ✓");
-          setTimeout(() => {
-            g("progWrap").style.display = "none";
-          }, 1000);
-          setStatus("g", "ESCANEANDO");
-          scanning = true;
-          loop();
+          setProg(100, "OCR listo ✓");
+          setTimeout(() => (g("progWrap").style.display = "none"), 800);
+          ocrReady = true;
+          setStatus("g", "LISTO");
+          g("btnCap").disabled = false;
         } catch (e) {
-          setStatus("r", "ERROR OCR");
+          setStatus("r", "ERROR");
           toast("Error OCR: " + e.message);
           console.error(e);
         }
       }
 
-      /* ── MAIN LOOP ── */
-      async function loop() {
-        if (!scanning || !stream) return;
-
-        try {
-          const vid = g("vid");
-          if (vid.readyState < 2) {
-            loopTimer = setTimeout(loop, 500);
-            return;
-          }
-
-          const W = vid.videoWidth,
-            H = vid.videoHeight;
-          if (!W || !H) {
-            loopTimer = setTimeout(loop, 500);
-            return;
-          }
-
-          // Build processed canvas
-          const processed = buildCanvas(vid, W, H);
-
-          // Show preview
-          if (pvOpen) {
-            const pb = g("pvBody");
-            pb.innerHTML = "";
-            const mini = document.createElement("canvas");
-            const s = Math.min(1, 460 / processed.width);
-            mini.width = Math.round(processed.width * s);
-            mini.height = Math.round(processed.height * s);
-            mini
-              .getContext("2d")
-              .drawImage(processed, 0, 0, mini.width, mini.height);
-            pb.appendChild(mini);
-          }
-
-          // Run OCR
-          const { data } = await worker1.recognize(processed);
-          const raw = (data.text || "").trim();
-          const conf = Math.round(data.confidence || 0);
-
-          // Log
-          rawLogs.unshift(
-            "[" +
-              new Date().toLocaleTimeString() +
-              "] conf:" +
-              conf +
-              '% → "' +
-              raw +
-              '"',
-          );
-          if (rawLogs.length > 20) rawLogs.pop();
-          if (dbgOpen) g("dbgBody").textContent = rawLogs.join("\n");
-
-          // Update confidence bar always
-          g("cfill").style.width = conf + "%";
-          g("cpct").textContent = conf + "%";
-
-          const serial = extractSerial(raw);
-          if (serial) {
-            showSerial(serial, conf);
-          } else {
-            g("smL").textContent = "🔍 Buscando... (conf:" + conf + "%)";
-          }
-        } catch (e) {
-          console.warn("loop error:", e);
+      /* ── CAPTURE ── */
+      async function capture() {
+        if (!ocrReady) {
+          toast("OCR aún cargando, espera...");
+          return;
+        }
+        const vid = g("vid");
+        if (!vid.videoWidth) {
+          toast("Cámara no lista");
+          return;
         }
 
-        if (scanning) loopTimer = setTimeout(loop, 1200);
+        g("btnCap").disabled = true;
+        setStatus("y", "LEYENDO...");
+
+        const W = vid.videoWidth,
+          H = vid.videoHeight;
+
+        // ROI = same as the green box: 5%-95% wide, 35%-65% tall
+        const sx = Math.round(W * 0.05);
+        const sy = Math.round(H * 0.3);
+        const sw = Math.round(W * 0.9);
+        const sh = Math.round(H * 0.4);
+
+        // Draw full frame
+        const full = document.createElement("canvas");
+        full.width = W;
+        full.height = H;
+        full.getContext("2d").drawImage(vid, 0, 0, W, H);
+
+        // Show progress
+        g("progWrap").style.display = "block";
+        setProg(10, "Capturando...");
+
+        // Build multiple processed versions and try each
+        const versions = [
+          makeCanvas(full, sx, sy, sw, sh, "auto", 3),
+          makeCanvas(full, sx, sy, sw, sh, "invert", 3),
+          makeCanvas(full, sx, sy, sw, sh, "auto", 4),
+          // wider crop in case serial is outside default zone
+          makeCanvas(
+            full,
+            0,
+            Math.round(H * 0.1),
+            W,
+            Math.round(H * 0.8),
+            "auto",
+            2,
+          ),
+        ];
+
+        // Show previews
+        const sb = g("snapBody");
+        sb.innerHTML = "";
+        versions.forEach((c, i) => {
+          const wrap = document.createElement("div");
+          const mini = document.createElement("canvas");
+          const s = Math.min(1, 220 / c.width);
+          mini.width = Math.round(c.width * s);
+          mini.height = Math.round(c.height * s);
+          mini.getContext("2d").drawImage(c, 0, 0, mini.width, mini.height);
+          const lbl = document.createElement("div");
+          lbl.className = "snap-label";
+          lbl.textContent = [
+            "Normal ×3",
+            "Invertido ×3",
+            "Normal ×4",
+            "Amplio ×2",
+          ][i];
+          wrap.appendChild(mini);
+          wrap.appendChild(lbl);
+          sb.appendChild(wrap);
+        });
+        g("snapCard").style.display = "block";
+        g("snapInfo").textContent = versions.length + " variantes";
+
+        let bestSerial = "",
+          bestConf = 0,
+          allRaw = [];
+
+        for (let i = 0; i < versions.length; i++) {
+          setProg(
+            20 + i * 18,
+            `Analizando variante ${i + 1}/${versions.length}...`,
+          );
+          try {
+            const { data } = await worker.recognize(versions[i]);
+            const raw = (data.text || "").trim();
+            const conf = data.confidence || 0;
+            allRaw.push(`[v${i + 1}] conf:${Math.round(conf)}%\n"${raw}"\n`);
+
+            const serial = extractSerial(raw);
+            if (serial && conf > bestConf) {
+              bestSerial = serial;
+              bestConf = conf;
+            }
+          } catch (e) {
+            console.warn("OCR err v" + i, e);
+          }
+        }
+
+        setProg(
+          100,
+          bestSerial ? "✅ Serie detectada" : "⚠️ No se encontró serie",
+        );
+
+        // Update debug
+        g("dbgBody").textContent = allRaw.join("\n---\n");
+        if (dbgOpen) g("dbgBody").classList.add("on");
+
+        if (bestSerial) {
+          showResult(bestSerial, Math.round(bestConf));
+          toast("✅ Serie: " + bestSerial);
+        } else {
+          showNoResult();
+          toast(
+            '⚠️ No se detectó la serie. Abre "Texto crudo OCR" para ver qué leyó.',
+          );
+        }
+
+        setTimeout(() => {
+          g("btnCap").disabled = false;
+          setStatus("g", "LISTO");
+        }, 1000);
       }
 
       /* ── IMAGE PROCESSING ── */
-      function buildCanvas(vid, W, H) {
-        // Crop the ROI zone (center 90% width, 50% height centered)
-        const sx = Math.round(W * 0.05);
-        const sy = Math.round(H * 0.25);
-        const sw = Math.round(W * 0.9);
-        const sh = Math.round(H * 0.5);
-
-        // Scale factor — upscale for better OCR
-        const SCALE = 3;
+      function makeCanvas(src, sx, sy, sw, sh, mode, scale) {
         const out = document.createElement("canvas");
-        out.width = sw * SCALE;
-        out.height = sh * SCALE;
+        out.width = sw * scale;
+        out.height = sh * scale;
         const ctx = out.getContext("2d");
-
-        // Draw upscaled crop
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(vid, sx, sy, sw, sh, 0, 0, out.width, out.height);
+        ctx.drawImage(src, sx, sy, sw, sh, 0, 0, out.width, out.height);
 
-        // ── Pixel processing ──
         const img = ctx.getImageData(0, 0, out.width, out.height);
         const d = img.data;
-        const len = d.length;
+        const W = out.width,
+          H = out.height;
 
-        // 1. Grayscale
-        const gray = new Float32Array(len / 4);
-        for (let i = 0, p = 0; i < len; i += 4, p++) {
+        // Grayscale
+        const gray = new Float32Array(W * H);
+        for (let i = 0, p = 0; i < d.length; i += 4, p++) {
           gray[p] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
         }
 
-        // 2. Compute local stats for adaptive threshold (block size 32px)
-        const W2 = out.width,
-          H2 = out.height;
-        const BLK = 32;
-
-        for (let py = 0; py < H2; py++) {
-          for (let px = 0; px < W2; px++) {
-            const p = py * W2 + px;
-            // local mean in block
-            const x0 = Math.max(0, px - BLK),
-              x1 = Math.min(W2 - 1, px + BLK);
-            const y0 = Math.max(0, py - BLK),
-              y1 = Math.min(H2 - 1, py + BLK);
-            let sum = 0,
-              cnt = 0;
-            for (let ly = y0; ly <= y1; ly += 4) {
-              for (let lx = x0; lx <= x1; lx += 4) {
-                sum += gray[ly * W2 + lx];
-                cnt++;
+        if (mode === "auto") {
+          // Adaptive threshold — local block mean
+          const BLK = 20;
+          for (let py = 0; py < H; py++) {
+            for (let px = 0; px < W; px++) {
+              const p = py * W + px;
+              let sum = 0,
+                cnt = 0;
+              for (let dy = -BLK; dy <= BLK; dy += 4) {
+                for (let dx = -BLK; dx <= BLK; dx += 4) {
+                  const ny = py + dy,
+                    nx = px + dx;
+                  if (ny >= 0 && ny < H && nx >= 0 && nx < W) {
+                    sum += gray[ny * W + nx];
+                    cnt++;
+                  }
+                }
               }
+              const mean = sum / cnt;
+              const val = gray[p] < mean - 8 ? 0 : 255;
+              const i4 = p * 4;
+              d[i4] = d[i4 + 1] = d[i4 + 2] = val;
+              d[i4 + 3] = 255;
             }
-            const mean = sum / cnt;
-            // Threshold: if pixel is darker than local mean-5, it's ink
-            const val = gray[p] < mean - 5 ? 0 : 255;
-            const i4 = p * 4;
-            d[i4] = d[i4 + 1] = d[i4 + 2] = val;
-            d[i4 + 3] = 255;
+          }
+        } else {
+          // Invert: assume dark background, light text
+          for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+            const val = gray[p] > 128 ? 0 : 255;
+            d[i] = d[i + 1] = d[i + 2] = val;
+            d[i + 3] = 255;
           }
         }
 
         ctx.putImageData(img, 0, 0);
 
-        // 3. Add white border padding for Tesseract
+        // Pad with white border
+        const PAD = 40;
         const padded = document.createElement("canvas");
-        const PAD = 30;
         padded.width = out.width + PAD * 2;
         padded.height = out.height + PAD * 2;
         const pctx = padded.getContext("2d");
-        pctx.fillStyle = "#ffffff";
+        pctx.fillStyle = "#fff";
         pctx.fillRect(0, 0, padded.width, padded.height);
         pctx.drawImage(out, PAD, PAD);
-
         return padded;
       }
 
       /* ── SERIAL EXTRACTION ── */
       function extractSerial(raw) {
         if (!raw) return "";
-        // Clean — keep only A-Z 0-9
         const clean = raw
           .toUpperCase()
-          .replace(/[^A-Z0-9]/g, " ")
+          .replace(/[^A-Z0-9\s]/g, " ")
           .replace(/\s+/g, " ")
           .trim();
-        if (!clean) return "";
 
-        // Bolivian bill serial patterns — try strongest first
+        // Bolivian bill patterns (strongest → weakest):
+        // 2266791860 A  →  digits + space + letter
+        // A123456789    →  letter + digits
         const patterns = [
-          /\b[A-Z]{1,2}[0-9]{6,8}\b/, // A1234567 or BC1234567
-          /\b[A-Z][0-9]{5,9}\b/, // A12345
-          /\b[0-9]{7,10}\b/, // 1234567890 pure digits
-          /\b[A-Z0-9]{7,11}\b/, // any mix 7-11 chars
+          /\b(\d{7,11})\s*([A-Z])\b/, // 2266791860 A  ← main format
+          /\b([A-Z])\s*(\d{7,11})\b/, // A 2266791860
+          /\b([A-Z]{1,2})(\d{6,10})\b/, // AB1234567
+          /\b(\d{7,11})\b/, // pure digits fallback
+          /\b([A-Z0-9]{7,12})\b/, // any alphanum fallback
         ];
 
         for (const re of patterns) {
           const m = clean.match(re);
-          if (m) return m[0];
+          if (m) {
+            // Reconstruct full serial
+            if (m[2] && m[2].length === 1 && /[A-Z]/.test(m[2])) {
+              return m[1] + m[2]; // 2266791860A
+            }
+            if (m[1] && m[1].length === 1 && /[A-Z]/.test(m[1])) {
+              return m[1] + m[2]; // A2266791860
+            }
+            return m[0].replace(/\s/g, "");
+          }
         }
         return "";
       }
 
-      /* ── SHOW SERIAL ── */
-      function showSerial(serial, conf) {
-        if (serial === lastSerial && Date.now() - lastTime < 3000) return;
-        lastSerial = serial;
-        lastTime = Date.now();
-
-        g("scard").classList.add("found");
-        const s = g("serial");
+      /* ── UI ── */
+      function showResult(serial, conf) {
+        g("rcard").classList.add("found");
+        const s = g("serialOut");
         s.textContent = serial;
-        s.className = "serial lit";
+        s.className = "serial-out lit";
         setTimeout(() => s.classList.remove("lit"), 400);
-        g("sbadge").textContent = serial.length + " chars";
-        g("smL").textContent = "✅ Detectado · conf " + conf + "%";
-        g("smR").textContent = new Date().toLocaleTimeString("es-BO");
-
+        g("rbadge").textContent = serial.length + " chars · " + conf + "%";
+        g("rmL").textContent = "✅ Serie detectada";
+        g("rmR").textContent = new Date().toLocaleTimeString("es-BO");
         addHistory(serial);
       }
 
+      function showNoResult() {
+        g("rcard").classList.remove("found");
+        const s = g("serialOut");
+        s.innerHTML =
+          '<span class="serial-ph">No detectado — intenta de nuevo</span>';
+        s.className = "serial-out";
+        g("rbadge").textContent = "—";
+        g("rmL").textContent = "⚠️ Revisa el debug para ver qué leyó";
+        g("rmR").textContent = new Date().toLocaleTimeString("es-BO");
+      }
+
       function addHistory(serial) {
-        if (history[0]?.serial === serial) return;
         history.unshift({ serial });
         if (history.length > 50) history.pop();
         g("hcnt").textContent = history.length;
@@ -984,24 +1083,10 @@
         list.prepend(d);
       }
 
-      /* ── HELPERS ── */
-      function setProgress(pct, label) {
-        g("progFill").style.width = pct + "%";
-        g("progLabel").textContent = label;
-      }
-
-      function togglePrev() {
-        pvOpen = !pvOpen;
-        g("pvBody").className = "prev-body" + (pvOpen ? " on" : "");
-        g("pvArrow").textContent = pvOpen ? "▼ ocultar" : "▶ ver";
-      }
-
       function toggleDbg() {
         dbgOpen = !dbgOpen;
-        const b = g("dbgBody");
-        b.className = "dbg-body" + (dbgOpen ? " on" : "");
-        g("dbgArrow").textContent = dbgOpen ? "▼ ocultar" : "▶ ver";
-        if (dbgOpen) b.textContent = rawLogs.join("\n") || "(sin datos aún)";
+        g("dbgBody").className = "dbg-body" + (dbgOpen ? " on" : "");
+        g("dbgArr").textContent = dbgOpen ? "▼ ocultar" : "▶ ver";
       }
 
       function setStatus(type, txt) {
@@ -1010,11 +1095,16 @@
         g("stxt").textContent = txt;
       }
 
+      function setProg(pct, label) {
+        g("progFill").style.width = pct + "%";
+        g("progLabel").textContent = label;
+      }
+
       function g(id) {
         return document.getElementById(id);
       }
 
-      function toast(msg, ms = 4000) {
+      function toast(msg, ms = 3500) {
         const t = g("toast");
         t.textContent = msg;
         t.classList.add("show");
