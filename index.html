@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <title>Serie-BOL OCR</title>
+    <title>Serie-BOL will</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap");
       * {
@@ -41,6 +41,47 @@
         margin-top: -6px;
       }
 
+      /* DENOMINATION TABS */
+      .tabs {
+        width: 100%;
+        max-width: 440px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+      }
+      .tab {
+        padding: 12px 6px;
+        border-radius: 10px;
+        border: 2px solid #152540;
+        background: #0a1828;
+        cursor: pointer;
+        text-align: center;
+        font-family: "Orbitron", sans-serif;
+        font-size: 14px;
+        font-weight: 900;
+        color: #2a4a68;
+        letter-spacing: 1px;
+        transition: all 0.2s;
+      }
+      .tab.sel-10 {
+        border-color: #ffd600;
+        color: #ffd600;
+        background: rgba(255, 214, 0, 0.08);
+        box-shadow: 0 0 16px rgba(255, 214, 0, 0.15);
+      }
+      .tab.sel-20 {
+        border-color: #0096ff;
+        color: #0096ff;
+        background: rgba(0, 150, 255, 0.08);
+        box-shadow: 0 0 16px rgba(0, 150, 255, 0.15);
+      }
+      .tab.sel-50 {
+        border-color: #00c864;
+        color: #00c864;
+        background: rgba(0, 200, 100, 0.08);
+        box-shadow: 0 0 16px rgba(0, 200, 100, 0.15);
+      }
+
       /* CAMERA */
       .cam-wrap {
         position: relative;
@@ -61,8 +102,6 @@
       canvas {
         display: none;
       }
-
-      /* ROI green box */
       .roi {
         position: absolute;
         left: 5%;
@@ -105,7 +144,6 @@
           top: 96%;
         }
       }
-
       .ph {
         position: absolute;
         inset: 0;
@@ -174,7 +212,6 @@
       .btn-cam:active {
         transform: scale(0.97);
       }
-
       .btn-cap {
         width: 100%;
         max-width: 440px;
@@ -209,17 +246,17 @@
         background: #0a1828;
         border: 2px solid #152540;
         border-radius: 16px;
-        padding: 18px 16px;
+        padding: 18px 16px 20px;
         text-align: center;
         transition: all 0.4s;
       }
-      .result.found {
+      .result.verdadero {
         border-color: #00e676;
-        box-shadow: 0 0 36px rgba(0, 230, 118, 0.18);
+        box-shadow: 0 0 40px rgba(0, 230, 118, 0.2);
       }
-      .result.error {
-        border-color: #ff4060;
-        box-shadow: 0 0 24px rgba(255, 64, 96, 0.12);
+      .result.falso {
+        border-color: #ff3a5a;
+        box-shadow: 0 0 40px rgba(255, 58, 90, 0.2);
       }
 
       .result-lbl {
@@ -232,27 +269,28 @@
 
       .number {
         font-family: "Share Tech Mono", monospace;
-        font-size: 36px;
+        font-size: 34px;
         letter-spacing: 5px;
         color: #1a3050;
-        min-height: 54px;
+        min-height: 52px;
         display: flex;
         align-items: center;
         justify-content: center;
         word-break: break-all;
         transition: all 0.3s;
         line-height: 1.2;
+        margin-bottom: 14px;
       }
       .number.show {
-        color: #00e676;
-        text-shadow: 0 0 30px rgba(0, 230, 118, 0.9);
         animation: pop 0.35s ease;
       }
-      .number.err {
-        color: #ff4060;
-        font-size: 16px;
-        letter-spacing: 1px;
-        font-family: "Rajdhani", sans-serif;
+      .number.verde {
+        color: #00e676;
+        text-shadow: 0 0 30px rgba(0, 230, 118, 0.9);
+      }
+      .number.rojo {
+        color: #ff3a5a;
+        text-shadow: 0 0 30px rgba(255, 58, 90, 0.7);
       }
       @keyframes pop {
         0% {
@@ -264,6 +302,66 @@
         100% {
           transform: scale(1);
         }
+      }
+
+      .verdict {
+        font-family: "Orbitron", sans-serif;
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: 4px;
+        padding: 14px 20px;
+        border-radius: 12px;
+        display: none;
+        animation: fadein 0.4s ease;
+      }
+      .verdict.show {
+        display: block;
+      }
+      .verdict.v {
+        color: #00e676;
+        background: rgba(0, 230, 118, 0.08);
+        border: 1px solid rgba(0, 230, 118, 0.2);
+      }
+      .verdict.f {
+        color: #ff3a5a;
+        background: rgba(255, 58, 90, 0.08);
+        border: 1px solid rgba(255, 58, 90, 0.2);
+      }
+      @keyframes fadein {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .denom-badge {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 5px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        font-family: "Rajdhani", sans-serif;
+      }
+      .denom-10 {
+        background: rgba(255, 214, 0, 0.15);
+        color: #ffd600;
+        border: 1px solid rgba(255, 214, 0, 0.3);
+      }
+      .denom-20 {
+        background: rgba(0, 150, 255, 0.15);
+        color: #0096ff;
+        border: 1px solid rgba(0, 150, 255, 0.3);
+      }
+      .denom-50 {
+        background: rgba(0, 200, 100, 0.15);
+        color: #00c864;
+        border: 1px solid rgba(0, 200, 100, 0.3);
       }
 
       /* SPINNER */
@@ -297,7 +395,7 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
-        max-height: 220px;
+        max-height: 240px;
         overflow-y: auto;
       }
       .hist-item {
@@ -307,7 +405,7 @@
         padding: 11px 14px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 10px;
         animation: fi 0.2s ease;
       }
       @keyframes fi {
@@ -319,13 +417,45 @@
           opacity: 1;
         }
       }
-      .hist-n {
-        font-family: "Share Tech Mono", monospace;
-        font-size: 17px;
-        letter-spacing: 3px;
-        color: #90c0e8;
+      .hi-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
       }
-      .hist-t {
+      .hi-dot.v {
+        background: #00e676;
+        box-shadow: 0 0 6px #00e676;
+      }
+      .hi-dot.f {
+        background: #ff3a5a;
+        box-shadow: 0 0 6px #ff3a5a;
+      }
+      .hi-num {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 15px;
+        letter-spacing: 2px;
+        flex: 1;
+      }
+      .hi-num.v {
+        color: #90e0b0;
+      }
+      .hi-num.f {
+        color: #e09090;
+      }
+      .hi-res {
+        font-size: 10px;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .hi-res.v {
+        color: #00e676;
+      }
+      .hi-res.f {
+        color: #ff3a5a;
+      }
+      .hi-t {
         font-size: 10px;
         color: #1e3a58;
         letter-spacing: 1px;
@@ -340,14 +470,21 @@
     </style>
   </head>
   <body>
-    <h1>🇧🇴 SERIE-BOL OCR</h1>
-    <div class="sub">OCR.Space API · Gratis · Sin registro</div>
+    <h1>🇧🇴 SERIE-BOL will</h1>
+    <div class="sub">Verificador · BCB CP9/2026</div>
+
+    <!-- DENOMINATION SELECTOR -->
+    <div class="tabs">
+      <div class="tab" id="tab10" onclick="selDenom(10)">Bs. 10</div>
+      <div class="tab" id="tab20" onclick="selDenom(20)">Bs. 20</div>
+      <div class="tab" id="tab50" onclick="selDenom(50)">Bs. 50</div>
+    </div>
 
     <!-- CAMERA -->
-    <div class="cam-wrap" id="camWrap">
+    <div class="cam-wrap">
       <div class="ph" id="ph">
         <div class="ico">📷</div>
-        <p>Toca "Abrir Cámara"<br />y apunta al número de serie</p>
+        <p>Selecciona el valor del billete<br />luego abre la cámara</p>
       </div>
       <video id="vid" autoplay playsinline muted style="display: none"></video>
       <canvas id="cap"></canvas>
@@ -357,36 +494,107 @@
       </div>
     </div>
 
-    <div class="status" id="status">Listo para iniciar</div>
+    <div class="status" id="status">Selecciona Bs. 10, 20 o 50</div>
 
-    <button class="btn-cam" id="btnCam" onclick="startCam()">
+    <button
+      class="btn-cam"
+      id="btnCam"
+      onclick="startCam()"
+      style="display: none"
+    >
       📷 Abrir Cámara
     </button>
     <button class="btn-cap" id="btnCap" onclick="capturar()">
-      📸 SACAR NÚMERO
+      📸 VERIFICAR BILLETE
     </button>
 
     <!-- RESULT -->
     <div class="result" id="result">
       <div class="result-lbl">Número de serie</div>
       <div class="number" id="numOut">—</div>
+      <div class="verdict" id="verdict"></div>
+      <div id="denomShow"></div>
     </div>
 
     <!-- HISTORY -->
-    <div class="hist-title">Últimas lecturas</div>
+    <div class="hist-title">Historial de verificaciones</div>
     <div class="hist-list" id="histList">
-      <div class="hist-empty">Sin lecturas aún</div>
+      <div class="hist-empty">Sin verificaciones aún</div>
     </div>
 
     <script>
-      let stream = null;
+      /* ═══════════════════════════════════════════════
+   BASE DE DATOS — BCB CP9/2026 · 28 feb 2026
+   Rangos SIN VALOR LEGAL (FALSOS)
+   Si el número cae en estos rangos → FALSO
+═══════════════════════════════════════════════ */
+      const FALSOS = {
+        50: [
+          [67250001, 67700000],
+          [69050001, 69500000],
+          [69500001, 69950000],
+          [69950001, 70400000],
+          [70400001, 70850000],
+          [70850001, 71300000],
+          [76310012, 85139995],
+          [86400001, 86850000],
+          [90900001, 91350000],
+          [91800001, 92250000],
+        ],
+        20: [
+          [87280145, 91646549],
+          [96650001, 97100000],
+          [99800001, 100250000],
+          [100250001, 100700000],
+          [109250001, 109700000],
+          [110600001, 111050000],
+          [111050001, 111500000],
+          [111950001, 112400000],
+          [112400001, 112850000],
+          [112850001, 113300000],
+          [114200001, 114650000],
+          [114650001, 115100000],
+          [115100001, 115550000],
+          [118700001, 119150000],
+          [119150001, 119600000],
+          [120500001, 120950000],
+        ],
+        10: [
+          [77100001, 77550000],
+          [78000001, 78450000],
+          [78900001, 96350000],
+          [96350001, 96800000],
+          [96800001, 97250000],
+          [98150001, 98600000],
+          [104900001, 105350000],
+          [105350001, 105800000],
+          [106700001, 107150000],
+          [107600001, 108050000],
+          [108050001, 108500000],
+          [109400001, 109850000],
+        ],
+      };
 
-      // OCR.Space free key — funciona sin registro
-      // Límite: 500 requests/día gratis
       const OCR_KEY = "helloworld";
+      let stream = null,
+        denom = 0;
+
+      /* ── DENOM SELECT ── */
+      function selDenom(d) {
+        denom = d;
+        ["tab10", "tab20", "tab50"].forEach((id) => (g(id).className = "tab"));
+        g("tab" + d).className = "tab sel-" + d;
+        g("btnCam").style.display = "block";
+        g("btnCap").style.display = stream ? "block" : "none";
+        setStatus("ready", "Bs. " + d + " seleccionado — abre la cámara");
+      }
 
       /* ── CAMERA ── */
       async function startCam() {
+        if (!denom) {
+          setStatus("err", "Selecciona el valor primero");
+          return;
+        }
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
@@ -395,14 +603,13 @@
               height: { ideal: 1080 },
             },
           });
-          const v = g("vid");
-          v.srcObject = stream;
-          v.style.display = "block";
+          g("vid").srcObject = stream;
+          g("vid").style.display = "block";
           g("ph").style.display = "none";
           g("roi").style.display = "block";
           g("btnCam").style.display = "none";
           g("btnCap").style.display = "block";
-          setStatus("ready", "Centra el número y toca el botón");
+          setStatus("ready", "Centra el número de serie y toca el botón");
         } catch (e) {
           setStatus("err", "Error cámara: " + e.message);
         }
@@ -410,6 +617,10 @@
 
       /* ── CAPTURAR ── */
       async function capturar() {
+        if (!denom) {
+          setStatus("err", "Selecciona Bs. 10, 20 o 50 primero");
+          return;
+        }
         const vid = g("vid");
         if (!vid.videoWidth) {
           setStatus("err", "Cámara no lista");
@@ -419,47 +630,65 @@
         g("btnCap").disabled = true;
         setStatus("loading", "Leyendo número...");
         g("result").className = "result";
+        g("numOut").className = "number";
         g("numOut").innerHTML = '<div class="spinner"></div>';
+        g("verdict").className = "verdict";
+        g("denomShow").innerHTML = "";
 
         try {
           const W = vid.videoWidth,
             H = vid.videoHeight;
-
-          // Crop the green ROI zone
           const sx = Math.round(W * 0.05),
             sy = Math.round(H * 0.28);
           const sw = Math.round(W * 0.9),
             sh = Math.round(H * 0.44);
-
           const c = document.createElement("canvas");
           c.width = sw;
           c.height = sh;
           c.getContext("2d").drawImage(vid, sx, sy, sw, sh, 0, 0, sw, sh);
-
-          // Convert to base64
           const base64 = c.toDataURL("image/jpeg", 0.95).split(",")[1];
 
-          // Send to OCR.Space
           const serial = await ocrSpace(base64);
 
-          if (serial) {
-            const out = g("numOut");
-            out.textContent = serial;
-            out.className = "number show";
-            setTimeout(() => out.classList.remove("show"), 500);
-            g("result").className = "result found";
-            addHistory(serial);
-            setStatus("ready", "✅ Listo — toca de nuevo para otro billete");
-          } else {
-            g("numOut").className = "number err";
-            g("numOut").textContent = "No detectado — intenta de nuevo";
-            g("result").className = "result error";
-            setStatus("err", "Acerca más el billete y reintenta");
+          if (!serial) {
+            g("numOut").className = "number";
+            g("numOut").textContent = "¿?";
+            setStatus("err", "No se leyó — acerca el billete y reintenta");
+            g("btnCap").disabled = false;
+            return;
           }
+
+          // Verify
+          const esFalso = verificar(serial, denom);
+
+          // Show number
+          const out = g("numOut");
+          out.textContent = serial;
+          out.className = "number show " + (esFalso ? "rojo" : "verde");
+
+          // Show verdict
+          const vrd = g("verdict");
+          if (esFalso) {
+            vrd.textContent = "✗ FALSO";
+            vrd.className = "verdict show f";
+            g("result").className = "result falso";
+          } else {
+            vrd.textContent = "✓ VERDADERO";
+            vrd.className = "verdict show v";
+            g("result").className = "result verdadero";
+          }
+
+          // Denom badge
+          g("denomShow").innerHTML =
+            `<div class="denom-badge denom-${denom}">Bs. ${denom}</div>`;
+
+          setStatus(
+            esFalso ? "err" : "ready",
+            esFalso ? "⚠️ Billete sin valor legal" : "✅ Billete válido",
+          );
+          addHistory(serial, denom, esFalso);
         } catch (e) {
-          g("numOut").className = "number err";
-          g("numOut").textContent = "Error de conexión";
-          g("result").className = "result error";
+          g("numOut").textContent = "Error";
           setStatus("err", e.message);
           console.error(e);
         }
@@ -467,64 +696,67 @@
         g("btnCap").disabled = false;
       }
 
-      /* ── OCR.SPACE API ── */
+      /* ── VERIFICAR ── */
+      function verificar(serial, denom) {
+        // Extract pure digits from serial (remove trailing letter if present)
+        const digits = serial.replace(/[A-Z]/g, "").trim();
+        const num = parseInt(digits, 10);
+        if (isNaN(num)) return false;
+
+        const rangos = FALSOS[denom] || [];
+        for (const [desde, hasta] of rangos) {
+          if (num >= desde && num <= hasta) return true; // FALSO
+        }
+        return false; // VERDADERO
+      }
+
+      /* ── OCR.SPACE ── */
       async function ocrSpace(base64) {
-        const formData = new FormData();
-        formData.append("base64Image", "data:image/jpeg;base64," + base64);
-        formData.append("apikey", OCR_KEY);
-        formData.append("language", "eng");
-        formData.append("isOverlayRequired", "false");
-        formData.append("detectOrientation", "true");
-        formData.append("scale", "true"); // auto-scale for better accuracy
-        formData.append("OCREngine", "2"); // Engine 2 = more accurate
+        const fd = new FormData();
+        fd.append("base64Image", "data:image/jpeg;base64," + base64);
+        fd.append("apikey", OCR_KEY);
+        fd.append("language", "eng");
+        fd.append("isOverlayRequired", "false");
+        fd.append("detectOrientation", "true");
+        fd.append("scale", "true");
+        fd.append("OCREngine", "2");
 
         const res = await fetch("https://api.ocr.space/parse/image", {
           method: "POST",
-          body: formData,
+          body: fd,
         });
-
-        if (!res.ok) throw new Error("OCR API error " + res.status);
-
+        if (!res.ok) throw new Error("OCR error " + res.status);
         const data = await res.json();
-
-        if (data.IsErroredOnProcessing) {
+        if (data.IsErroredOnProcessing)
           throw new Error(data.ErrorMessage?.[0] || "OCR error");
-        }
 
         const raw = data.ParsedResults?.[0]?.ParsedText || "";
-        console.log("OCR raw:", raw);
-
+        console.log("OCR:", raw);
         return extractSerial(raw);
       }
 
       /* ── EXTRACT SERIAL ── */
       function extractSerial(raw) {
         if (!raw) return "";
-        // Clean: keep only letters, digits, spaces
         const s = raw
           .toUpperCase()
           .replace(/[^A-Z0-9\s]/g, " ")
           .replace(/\s+/g, " ")
           .trim();
-
-        // Bolivian bill formats:
-        // 2266791860 A  →  digits (8-11) + optional space + letter
-        // A 2266791860  →  letter + optional space + digits
         const tests = [
-          /(\d{8,11})\s*([A-Z])\b/, // 2266791860A  ← formato principal
-          /\b([A-Z])\s*(\d{8,11})/, // A2266791860
-          /\b[A-Z]{1,2}\d{6,10}\b/, // AB123456
-          /\b\d{7,11}\b/, // solo dígitos
+          /(\d{8,11})\s*([A-Z])\b/,
+          /\b([A-Z])\s*(\d{8,11})/,
+          /\b[A-Z]{1,2}\d{6,10}\b/,
+          /\b\d{7,11}\b/,
         ];
-
         for (const re of tests) {
           const m = s.match(re);
           if (!m) continue;
           if (m[2] !== undefined) {
             const a = m[1],
               b = m[2];
-            if (/^[A-Z]$/.test(b)) return a + b; // 2266791860A
-            if (/^[A-Z]$/.test(a)) return a + b; // A2266791860
+            if (/^[A-Z]$/.test(b)) return a + b;
+            if (/^[A-Z]$/.test(a)) return a + b;
           }
           return m[0].replace(/\s/g, "");
         }
@@ -532,12 +764,18 @@
       }
 
       /* ── HISTORY ── */
-      function addHistory(serial) {
+      function addHistory(serial, denom, esFalso) {
         const list = g("histList");
         if (list.querySelector(".hist-empty")) list.innerHTML = "";
         const d = document.createElement("div");
         d.className = "hist-item";
-        d.innerHTML = `<span class="hist-n">${serial}</span><span class="hist-t">${new Date().toLocaleTimeString("es-BO")}</span>`;
+        d.innerHTML = `
+    <div class="hi-dot ${esFalso ? "f" : "v"}"></div>
+    <div class="hi-num ${esFalso ? "f" : "v"}">${serial}</div>
+    <span class="denom-badge denom-${denom}" style="font-size:10px;padding:3px 8px">Bs.${denom}</span>
+    <div class="hi-res ${esFalso ? "f" : "v"}">${esFalso ? "FALSO" : "REAL"}</div>
+    <div class="hi-t">${new Date().toLocaleTimeString("es-BO")}</div>
+  `;
         list.prepend(d);
       }
 
@@ -546,7 +784,6 @@
         s.className = "status" + (cls ? " " + cls : "");
         s.textContent = txt;
       }
-
       function g(id) {
         return document.getElementById(id);
       }
