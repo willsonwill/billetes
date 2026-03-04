@@ -6,14 +6,14 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <title>Serie-BOL</title>
-    <script src="https://unpkg.com/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
+    <title>Serie-BOL IA</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap");
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
       }
       body {
         background: #060b14;
@@ -23,19 +23,84 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 16px;
-        gap: 14px;
+        padding: 14px 14px 30px;
+        gap: 12px;
       }
 
       h1 {
         font-family: "Orbitron", sans-serif;
-        font-size: 16px;
+        font-size: 15px;
         letter-spacing: 3px;
-        color: #aac4e0;
-        margin-top: 4px;
+        color: #7aaed0;
+        margin-top: 2px;
       }
 
-      /* VIDEO */
+      /* API KEY INPUT */
+      .apibox {
+        width: 100%;
+        max-width: 440px;
+        background: #0a1828;
+        border: 1px solid #1a3050;
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .apibox label {
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: #2e6080;
+        text-transform: uppercase;
+      }
+      .apibox-row {
+        display: flex;
+        gap: 8px;
+      }
+      .apibox input {
+        flex: 1;
+        background: #060d1a;
+        border: 1px solid #1a3050;
+        border-radius: 8px;
+        padding: 9px 12px;
+        color: #fff;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 1px;
+        outline: none;
+      }
+      .apibox input:focus {
+        border-color: #0066cc;
+      }
+      .apibox input::placeholder {
+        color: #1a3050;
+      }
+      .btn-save {
+        font-family: "Rajdhani", sans-serif;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 9px 16px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        background: linear-gradient(135deg, #004bbd, #0068f0);
+        color: #fff;
+      }
+      .api-status {
+        font-size: 11px;
+        letter-spacing: 1px;
+      }
+      .api-ok {
+        color: #00e676;
+      }
+      .api-no {
+        color: #ff4060;
+      }
+
+      /* CAMERA */
       .cam-wrap {
         position: relative;
         width: 100%;
@@ -56,53 +121,50 @@
         display: none;
       }
 
-      /* green box guide */
-      .box {
+      /* green ROI box */
+      .roi {
         position: absolute;
         left: 5%;
         right: 5%;
-        top: 30%;
-        bottom: 30%;
+        top: 28%;
+        bottom: 28%;
         border: 3px solid #00e676;
         border-radius: 8px;
-        box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.45);
+        box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.5);
         pointer-events: none;
       }
-      .box-lbl {
+      .roi-lbl {
         position: absolute;
-        top: 100%;
-        margin-top: 8px;
+        bottom: -22px;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 11px;
+        font-size: 10px;
         letter-spacing: 2px;
         color: #00e676;
         white-space: nowrap;
         text-transform: uppercase;
         font-family: "Rajdhani", sans-serif;
-        text-shadow: 0 0 8px #00e676;
+        text-shadow: 0 0 8px rgba(0, 230, 118, 0.7);
       }
-      /* scan line inside box */
       .sline {
         position: absolute;
         left: 0;
         right: 0;
         height: 2px;
-        top: 0;
         background: linear-gradient(90deg, transparent, #00e676, transparent);
         box-shadow: 0 0 8px #00e676;
+        pointer-events: none;
         animation: sw 1.5s ease-in-out infinite;
       }
       @keyframes sw {
         0% {
-          top: 5%;
+          top: 4%;
         }
         100% {
-          top: 95%;
+          top: 96%;
         }
       }
 
-      /* placeholder */
       .ph {
         position: absolute;
         inset: 0;
@@ -110,46 +172,50 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        color: #2a4a68;
+        gap: 8px;
+        color: #1e3a58;
       }
       .ph .ico {
-        font-size: 48px;
+        font-size: 42px;
       }
       .ph p {
-        font-size: 13px;
+        font-size: 12px;
         letter-spacing: 1px;
         text-align: center;
+        color: #2a4a68;
       }
 
-      /* BUTTON */
-      .btn-cap {
-        width: 100%;
-        max-width: 440px;
-        padding: 18px;
-        border-radius: 14px;
-        border: none;
-        cursor: pointer;
-        background: linear-gradient(135deg, #0040bb, #0068f0);
-        color: #fff;
-        font-family: "Orbitron", sans-serif;
-        font-size: 16px;
-        font-weight: 900;
-        letter-spacing: 3px;
-        box-shadow: 0 6px 24px rgba(0, 60, 180, 0.5);
-        transition: all 0.15s;
+      /* STATUS */
+      .status {
+        font-size: 11px;
+        letter-spacing: 2px;
+        color: #2e5070;
+        text-transform: uppercase;
+        text-align: center;
+        min-height: 16px;
       }
-      .btn-cap:active {
-        transform: scale(0.97);
+      .status.loading {
+        color: #ffd600;
+        animation: bl 0.7s infinite;
       }
-      .btn-cap:disabled {
-        background: #111d30;
-        color: #2a4060;
-        box-shadow: none;
-        cursor: not-allowed;
+      .status.ready {
+        color: #00e676;
+      }
+      .status.err {
+        color: #ff4060;
+      }
+      @keyframes bl {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
       }
 
-      .btn-start {
+      /* BUTTONS */
+      .btn-cam {
         width: 100%;
         max-width: 440px;
         padding: 14px;
@@ -162,58 +228,62 @@
         font-size: 15px;
         font-weight: 700;
         letter-spacing: 2px;
-        box-shadow: 0 4px 18px rgba(0, 168, 107, 0.4);
+        box-shadow: 0 4px 18px rgba(0, 168, 107, 0.35);
         transition: all 0.15s;
       }
-      .btn-start:active {
+      .btn-cam:active {
         transform: scale(0.97);
       }
 
-      /* STATUS */
-      .status {
-        font-size: 12px;
-        letter-spacing: 2px;
-        color: #2e5070;
-        text-transform: uppercase;
-        text-align: center;
+      .btn-cap {
+        width: 100%;
+        max-width: 440px;
+        padding: 18px;
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(135deg, #003eaa, #0062f0);
+        color: #fff;
+        font-family: "Orbitron", sans-serif;
+        font-size: 17px;
+        font-weight: 900;
+        letter-spacing: 3px;
+        box-shadow: 0 6px 28px rgba(0, 60, 180, 0.5);
+        transition: all 0.15s;
+        display: none;
       }
-      .status.loading {
-        color: #ffd600;
+      .btn-cap:active {
+        transform: scale(0.97);
+        box-shadow: 0 3px 14px rgba(0, 60, 180, 0.4);
       }
-      .status.ready {
-        color: #00e676;
-      }
-      .status.scanning {
-        color: #ffd600;
-        animation: bl 0.6s infinite;
-      }
-      @keyframes bl {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.4;
-        }
+      .btn-cap:disabled {
+        background: #0d1828;
+        color: #1a3050;
+        box-shadow: none;
+        cursor: not-allowed;
       }
 
-      /* RESULT — big number */
-      .result-wrap {
+      /* RESULT */
+      .result {
         width: 100%;
         max-width: 440px;
         background: #0a1828;
-        border: 2px solid #1a3050;
+        border: 2px solid #152540;
         border-radius: 16px;
-        padding: 20px 16px;
+        padding: 18px 16px 16px;
         text-align: center;
         transition: all 0.4s;
       }
-      .result-wrap.found {
+      .result.found {
         border-color: #00e676;
-        box-shadow: 0 0 32px rgba(0, 230, 118, 0.15);
+        box-shadow: 0 0 36px rgba(0, 230, 118, 0.18);
+      }
+      .result.error {
+        border-color: #ff4060;
+        box-shadow: 0 0 24px rgba(255, 64, 96, 0.1);
       }
 
-      .result-label {
+      .result-lbl {
         font-size: 10px;
         letter-spacing: 3px;
         text-transform: uppercase;
@@ -223,46 +293,67 @@
 
       .number {
         font-family: "Share Tech Mono", monospace;
-        font-size: 36px;
-        letter-spacing: 6px;
+        font-size: 34px;
+        letter-spacing: 5px;
         color: #1a3050;
-        min-height: 54px;
+        min-height: 52px;
         display: flex;
         align-items: center;
         justify-content: center;
         word-break: break-all;
         transition: all 0.3s;
+        line-height: 1.2;
       }
       .number.show {
         color: #00e676;
-        text-shadow: 0 0 28px rgba(0, 230, 118, 0.8);
+        text-shadow: 0 0 30px rgba(0, 230, 118, 0.9);
         animation: pop 0.35s ease;
+      }
+      .number.err {
+        color: #ff4060;
+        font-size: 18px;
+        letter-spacing: 2px;
       }
       @keyframes pop {
         0% {
           transform: scale(0.8);
         }
         60% {
-          transform: scale(1.08);
+          transform: scale(1.1);
         }
         100% {
           transform: scale(1);
         }
       }
 
+      /* SPINNER */
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #1a3050;
+        border-top-color: #0062f0;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        margin: 8px auto;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       /* HISTORY */
-      .hist-wrap {
+      .hist-title {
         width: 100%;
         max-width: 440px;
-      }
-      .hist-title {
         font-size: 10px;
         letter-spacing: 3px;
-        color: #2e5070;
+        color: #1e3a58;
         text-transform: uppercase;
-        margin-bottom: 8px;
       }
       .hist-list {
+        width: 100%;
+        max-width: 440px;
         display: flex;
         flex-direction: column;
         gap: 6px;
@@ -277,7 +368,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        animation: fi 0.25s ease;
+        animation: fi 0.2s ease;
       }
       @keyframes fi {
         from {
@@ -286,81 +377,123 @@
         }
         to {
           opacity: 1;
-          transform: none;
         }
       }
-      .hist-num {
+      .hist-n {
         font-family: "Share Tech Mono", monospace;
         font-size: 16px;
         letter-spacing: 3px;
-        color: #b0d0f0;
+        color: #90c0e8;
       }
       .hist-t {
         font-size: 10px;
-        color: #2e5070;
+        color: #1e3a58;
         letter-spacing: 1px;
       }
-      .empty {
-        font-size: 12px;
+      .hist-empty {
+        font-size: 11px;
         color: #1a3050;
         letter-spacing: 1px;
         text-align: center;
-        padding: 14px;
+        padding: 10px;
       }
     </style>
   </head>
   <body>
-    <h1>🇧🇴 SERIE-BOL</h1>
+    <h1>🇧🇴 SERIE-BOL IA</h1>
+
+    <!-- API KEY -->
+    <div class="apibox" id="apibox">
+      <label>🔑 Gemini API Key (gratuita)</label>
+      <div class="apibox-row">
+        <input
+          type="password"
+          id="apiInput"
+          placeholder="Pega tu API key aquí..."
+        />
+        <button class="btn-save" onclick="saveKey()">Guardar</button>
+      </div>
+      <span class="api-status" id="apiStatus"
+        >Obtén tu key gratis en <b>aistudio.google.com</b></span
+      >
+    </div>
 
     <!-- CAMERA -->
     <div class="cam-wrap" id="camWrap">
       <div class="ph" id="ph">
         <div class="ico">📷</div>
-        <p>Toca "Abrir Cámara"<br />para empezar</p>
+        <p>Primero guarda tu API key<br />luego inicia la cámara</p>
       </div>
       <video id="vid" autoplay playsinline muted style="display: none"></video>
       <canvas id="cap"></canvas>
-      <div class="box" id="box" style="display: none">
+      <div class="roi" id="roi" style="display: none">
         <div class="sline"></div>
-        <div class="box-lbl">número de serie aquí</div>
+        <div class="roi-lbl">número de serie aquí</div>
       </div>
     </div>
 
-    <!-- STATUS -->
-    <div class="status" id="status">Inactivo</div>
+    <div class="status" id="status">Ingresa tu API key para comenzar</div>
 
-    <!-- BUTTONS -->
-    <button class="btn-start" id="btnStart" onclick="startCam()">
+    <button
+      class="btn-cam"
+      id="btnCam"
+      onclick="startCam()"
+      style="display: none"
+    >
       📷 Abrir Cámara
     </button>
-    <button
-      class="btn-cap"
-      id="btnCap"
-      onclick="capturar()"
-      style="display: none"
-      disabled
-    >
+    <button class="btn-cap" id="btnCap" onclick="capturar()">
       📸 SACAR NÚMERO
     </button>
 
     <!-- RESULT -->
-    <div class="result-wrap" id="resWrap">
-      <div class="result-label">Número de serie</div>
+    <div class="result" id="result">
+      <div class="result-lbl">Número de serie</div>
       <div class="number" id="numOut">—</div>
     </div>
 
     <!-- HISTORY -->
-    <div class="hist-wrap">
-      <div class="hist-title">Últimas lecturas</div>
-      <div class="hist-list" id="histList">
-        <div class="empty">Sin lecturas aún</div>
-      </div>
+    <div class="hist-title">Últimas lecturas</div>
+    <div class="hist-list" id="histList">
+      <div class="hist-empty">Sin lecturas aún</div>
     </div>
 
     <script>
-      let stream = null,
-        worker = null,
-        ocrReady = false;
+      let apiKey = "AIzaSyBxRU4QNXNtmC3O7Xi3L0Itw1TGKoIGFTE",
+        stream = null;
+
+      /* ── API KEY ── */
+      function saveKey() {
+        const k = g("apiInput").value.trim();
+        if (!k) {
+          setApiStatus("Ingresa una key válida", false);
+          return;
+        }
+        apiKey = k;
+        localStorage.setItem("gemini_key", k);
+        setApiStatus("✅ API Key guardada", true);
+        g("btnCam").style.display = "block";
+        g("apiInput").value = "••••••••••••••••";
+        setStatus("ready", 'Toca "Abrir Cámara"');
+      }
+
+      function setApiStatus(msg, ok) {
+        const s = g("apiStatus");
+        s.textContent = msg;
+        s.className = "api-status " + (ok ? "api-ok" : "api-no");
+      }
+
+      // Load saved key
+      window.onload = () => {
+        const saved = localStorage.getItem("gemini_key");
+        if (saved) {
+          apiKey = saved;
+          g("apiInput").value = "••••••••••••••••";
+          setApiStatus("✅ API Key guardada", true);
+          g("btnCam").style.display = "block";
+          setStatus("ready", 'Toca "Abrir Cámara"');
+        }
+      };
 
       /* ── CAMERA ── */
       async function startCam() {
@@ -375,197 +508,145 @@
           g("vid").srcObject = stream;
           g("vid").style.display = "block";
           g("ph").style.display = "none";
-          g("box").style.display = "block";
-          g("btnStart").style.display = "none";
-          g("btnCap").style.display = "";
-          setStatus("loading", "Cargando OCR...");
-          await loadOCR();
+          g("roi").style.display = "block";
+          g("btnCam").style.display = "none";
+          g("btnCap").style.display = "block";
+          setStatus("ready", "Centra el número de serie y toca el botón");
         } catch (e) {
-          setStatus("", "Error: " + e.message);
+          setStatus("err", "Error cámara: " + e.message);
         }
-      }
-
-      /* ── LOAD OCR ── */
-      async function loadOCR() {
-        worker = Tesseract.createWorker({ logger: () => {} });
-        await worker.load();
-        await worker.loadLanguage("eng");
-        await worker.initialize("eng");
-        await worker.setParameters({
-          tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
-          tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
-        });
-        ocrReady = true;
-        g("btnCap").disabled = false;
-        setStatus("ready", "Listo — toca SACAR NÚMERO");
       }
 
       /* ── CAPTURAR ── */
       async function capturar() {
-        if (!ocrReady) return;
-        g("btnCap").disabled = true;
-        setStatus("scanning", "Leyendo...");
-
+        if (!apiKey) {
+          setStatus("err", "Falta la API Key");
+          return;
+        }
         const vid = g("vid");
-        const W = vid.videoWidth,
-          H = vid.videoHeight;
-
-        // Full frame canvas
-        const src = document.createElement("canvas");
-        src.width = W;
-        src.height = H;
-        src.getContext("2d").drawImage(vid, 0, 0, W, H);
-
-        // Try 5 horizontal strips covering the whole bill
-        // plus the green-box crop
-        const zones = [
-          [0.05, 0.3, 0.9, 0.4], // green box zone
-          [0.05, 0.05, 0.9, 0.2], // top
-          [0.05, 0.2, 0.9, 0.2], // upper
-          [0.05, 0.55, 0.9, 0.2], // lower
-          [0.05, 0.75, 0.9, 0.2], // bottom
-          [0.0, 0.0, 1.0, 1.0], // full frame fallback
-        ];
-
-        let bestSerial = "",
-          bestConf = 0;
-
-        for (const [rx, ry, rw, rh] of zones) {
-          const sx = Math.round(W * rx),
-            sy = Math.round(H * ry);
-          const sw = Math.round(W * rw),
-            sh = Math.round(H * rh);
-
-          // Process: grayscale + adaptive threshold + 3× upscale
-          const processed = process(src, sx, sy, sw, sh);
-
-          try {
-            const { data } = await worker.recognize(processed);
-            const serial = extract(data.text || "");
-            if (serial && (data.confidence || 0) > bestConf) {
-              bestSerial = serial;
-              bestConf = data.confidence;
-            }
-          } catch (e) {
-            /* skip */
-          }
-
-          if (bestSerial) break; // found it, stop scanning zones
+        if (!vid.videoWidth) {
+          setStatus("err", "Cámara no lista");
+          return;
         }
 
-        if (bestSerial) {
-          // SHOW BIG NUMBER
-          const out = g("numOut");
-          out.textContent = bestSerial;
-          out.classList.add("show");
-          setTimeout(() => out.classList.remove("show"), 500);
-          g("resWrap").classList.add("found");
-          addHistory(bestSerial);
-          setStatus("ready", "Serie leída ✓ — puedes sacar otra");
-        } else {
-          g("numOut").textContent = "¿?";
-          g("resWrap").classList.remove("found");
-          setStatus("ready", "No detectado — intenta de nuevo");
+        g("btnCap").disabled = true;
+        setStatus("loading", "Enviando a Gemini...");
+
+        // Show spinner in result
+        g("result").className = "result";
+        g("numOut").innerHTML = '<div class="spinner"></div>';
+
+        try {
+          // Capture frame
+          const W = vid.videoWidth,
+            H = vid.videoHeight;
+          const c = document.createElement("canvas");
+          // Crop the ROI zone only (green box area)
+          const sx = Math.round(W * 0.05),
+            sy = Math.round(H * 0.28);
+          const sw = Math.round(W * 0.9),
+            sh = Math.round(H * 0.44);
+          c.width = sw;
+          c.height = sh;
+          c.getContext("2d").drawImage(vid, sx, sy, sw, sh, 0, 0, sw, sh);
+
+          // Convert to base64 JPEG (compressed for speed)
+          const base64 = c.toDataURL("image/jpeg", 0.92).split(",")[1];
+
+          // Call Gemini
+          const serial = await askGemini(base64);
+
+          if (serial && serial !== "NO") {
+            const out = g("numOut");
+            out.textContent = serial;
+            out.className = "number show";
+            setTimeout(() => out.classList.remove("show"), 500);
+            g("result").className = "result found";
+            addHistory(serial);
+            setStatus("ready", "✅ Serie leída — toca de nuevo para otra");
+          } else {
+            g("numOut").className = "number err";
+            g("numOut").textContent = "No detectado";
+            g("result").className = "result error";
+            setStatus("err", "No se encontró — reintenta");
+          }
+        } catch (e) {
+          g("numOut").className = "number err";
+          g("numOut").textContent = "Error";
+          g("result").className = "result error";
+          setStatus("err", "Error: " + e.message);
+          console.error(e);
         }
 
         g("btnCap").disabled = false;
       }
 
-      /* ── IMAGE PROCESSING ── */
-      function process(src, sx, sy, sw, sh) {
-        const SCALE = 4;
-        const c = document.createElement("canvas");
-        c.width = sw * SCALE + 80;
-        c.height = sh * SCALE + 80;
-        const ctx = c.getContext("2d");
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, c.width, c.height);
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(src, sx, sy, sw, sh, 40, 40, sw * SCALE, sh * SCALE);
+      /* ── GEMINI API ── */
+      async function askGemini(base64img) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-        const img = ctx.getImageData(0, 0, c.width, c.height);
-        const d = img.data,
-          W = c.width,
-          H = c.height;
-        const gray = new Float32Array(W * H);
+        const body = {
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Mira esta imagen de un billete boliviano. 
+Encuentra el número de serie. 
+El número de serie es una secuencia de 8-11 dígitos seguida de una letra (ejemplo: 2266791860A o A2266791860).
+Responde ÚNICAMENTE con el número de serie, sin espacios, sin puntos, sin explicaciones.
+Si no encuentras ningún número de serie, responde solo: NO`,
+                },
+                {
+                  inline_data: {
+                    mime_type: "image/jpeg",
+                    data: base64img,
+                  },
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 30,
+          },
+        };
 
-        for (let i = 0, p = 0; i < d.length; i += 4, p++)
-          gray[p] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
 
-        const BLK = 24;
-        for (let py = 0; py < H; py++) {
-          for (let px = 0; px < W; px++) {
-            const p = py * W + px;
-            let sum = 0,
-              cnt = 0;
-            for (let dy = -BLK; dy <= BLK; dy += 3) {
-              for (let dx = -BLK; dx <= BLK; dx += 3) {
-                const ny = py + dy,
-                  nx = px + dx;
-                if (ny >= 0 && ny < H && nx >= 0 && nx < W) {
-                  sum += gray[ny * W + nx];
-                  cnt++;
-                }
-              }
-            }
-            const val = gray[p] < sum / cnt - 10 ? 0 : 255;
-            const i4 = p * 4;
-            d[i4] = d[i4 + 1] = d[i4 + 2] = val;
-            d[i4 + 3] = 255;
-          }
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error?.message || "Error API " + res.status);
         }
-        ctx.putImageData(img, 0, 0);
-        return c;
-      }
 
-      /* ── EXTRACT SERIAL ── */
-      function extract(raw) {
-        if (!raw) return "";
-        const s = raw
-          .toUpperCase()
-          .replace(/[^A-Z0-9]/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
-
-        // Bolivian format: 10 digits + letter  e.g. 2266791860A
-        const tests = [
-          /(\d{8,11})\s*([A-Z])/, // digits then letter — main format
-          /([A-Z])\s*(\d{8,11})/, // letter then digits
-          /\b[A-Z]{1,2}\d{6,9}\b/,
-          /\b\d{7,11}\b/,
-        ];
-
-        for (const re of tests) {
-          const m = s.match(re);
-          if (!m) continue;
-          if (m[2] !== undefined) {
-            // Two groups
-            const a = m[1],
-              b = m[2];
-            if (/^[A-Z]$/.test(b)) return a + b; // 2266791860A
-            if (/^[A-Z]$/.test(a)) return a + b; // A2266791860
-          }
-          return m[0].replace(/\s/g, "");
-        }
-        return "";
+        const data = await res.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        // Clean up just in case
+        return text
+          .trim()
+          .replace(/[^A-Z0-9]/gi, "")
+          .toUpperCase();
       }
 
       /* ── HISTORY ── */
       function addHistory(serial) {
         const list = g("histList");
-        if (list.querySelector(".empty")) list.innerHTML = "";
+        if (list.querySelector(".hist-empty")) list.innerHTML = "";
         const d = document.createElement("div");
         d.className = "hist-item";
-        d.innerHTML = `<span class="hist-num">${serial}</span><span class="hist-t">${new Date().toLocaleTimeString("es-BO")}</span>`;
+        d.innerHTML = `<span class="hist-n">${serial}</span><span class="hist-t">${new Date().toLocaleTimeString("es-BO")}</span>`;
         list.prepend(d);
       }
 
+      /* ── HELPERS ── */
       function setStatus(cls, txt) {
         const s = g("status");
         s.className = "status" + (cls ? " " + cls : "");
         s.textContent = txt;
       }
-
       function g(id) {
         return document.getElementById(id);
       }
